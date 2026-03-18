@@ -1,0 +1,8 @@
+.DS_Store
+.gemini/
+*.zip
+socialtoolkit-manual-backup.json
+node_modules/
+.planning/
+# Ignore any top-level zip files as they are likely backups
+tvcnet-social-toolkit*.zip

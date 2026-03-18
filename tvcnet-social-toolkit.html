@@ -1,0 +1,714 @@
+<!--
+ * File: tvcnet-social-toolkit.html
+ * Description: Main entry point for the TVCNet Social Toolkit.
+ * Author: TVCNet
+ * Version: 4.7.6
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TVCNet SocialToolkit — AI-Powered Social Media Toolkit for nonprofits and small businesses.">
+  <title>TVCNet SocialToolkit v4.7.6 — AI-Powered Social Media Toolkit</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sky: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+            ocean: '#0c4a6e',
+            frost: 'rgba(255,255,255,0.55)',
+            mist: 'rgba(255,255,255,0.35)',
+            deep: '#064e7a',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          borderRadius: {
+            glass: '1.25rem',
+            pill: '9999px',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="assets/css/social-toolkit.css?v=4.7.6">
+</head>
+
+<body class="font-sans text-ocean min-h-screen tst-sky-bg" x-data="socialToolkit" x-cloak>
+
+  <!-- HEADER — Frosted Glass Nav -->
+  <header
+    class="tst-glass-strong sticky top-0 z-50 px-4 md:px-12 flex items-center justify-between h-16 rounded-b-[2rem] mx-2 mt-0 border-b-0">
+    <div class="flex items-center truncate">
+      <img src="assets/img/apple-touch-icon.png" alt="Logo" class="h-8 w-8 mr-1.5 md:mr-2 rounded-md shadow-sm">
+      <div class="text-xl md:text-2xl font-bold tracking-tight text-ocean truncate mr-2">SocialToolkit <span class="text-[10px] md:text-xs text-sky-900/30 uppercase tracking-widest font-mono ml-1 align-middle">v4.7.6</span></div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button @click="openModal"
+        class="flex items-center gap-2 tst-glass border border-white/30 text-ocean font-mono text-[10px] md:text-[11px] tracking-wider uppercase px-3 md:px-4 py-1.5 rounded-pill hover:bg-white/60 hover:border-sky-300 transition-all font-medium whitespace-nowrap">
+        <div class="tst-status-dot flex-shrink-0" :class="isConfigured ? 'bg-green-400 tst-pulse-glow' : 'bg-red-400'"></div>
+        <span class="hidden sm:inline">⚙ API Keys</span>
+        <span class="sm:hidden">⚙ Keys</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- SETTINGS MODAL -->
+  <div class="fixed inset-0 bg-ocean/40 z-[500] flex items-center justify-center backdrop-blur-md" x-show="showModal"
+    x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+    x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" @click.self="closeModal"
+    style="display: none;">
+    <div
+      class="tst-glass-strong rounded-[2rem] w-[540px] max-w-[95vw] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div class="tst-glass-dark px-7 py-5 flex items-center justify-between rounded-t-[2rem]">
+        <div class="text-xl font-semibold text-white">API Configuration</div>
+        <button @click="closeModal" class="text-white/50 text-2xl hover:text-white transition-colors">✕</button>
+      </div>
+      <div class="p-7 overflow-y-auto">
+        <div
+          class="font-mono text-[10px] tracking-wider uppercase text-sky-900 block mb-4 font-bold flex items-center gap-1.5">
+          <span>🎯 Active AI Provider</span>
+          <span class="tst-tooltip-trigger" @click.stop="showHelp('aiProvider')">?</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-7 ai-row">
+          <template x-for="provider in providers" :key="provider.id">
+            <div
+              class="tst-ai-card tst-glass rounded-2xl p-4 text-center cursor-pointer transition-all relative select-none hover:scale-[1.03] hover:shadow-lg hover:bg-white/65"
+              :class="aiProv === provider.id ? 'active tst-card-pop' : ''" :data-p="provider.id"
+              @click="pickAI(provider.id)">
+              <div class="text-2xl mb-1.5 transition-transform hover:scale-110" x-text="provider.icon"></div>
+              <div class="font-mono text-xs font-semibold tracking-wider uppercase ai-name text-ocean"
+                x-text="provider.name"></div>
+              <div class="text-[11px] text-sky-800 mt-0.5 font-mono font-medium" x-text="provider.model"></div>
+              <div
+                class="absolute bottom-1.5 left-1/2 -translate-x-1/2 text-[9px] font-mono whitespace-nowrap font-medium transition-opacity"
+                :class="isSvcReady(provider) ? 'text-green-600/60 opacity-0 group-hover:opacity-100' : 'text-red-500'"
+                x-text="isSvcReady(provider) ? '✓ Ready' : '🔑 Key needed'"></div>
+            </div>
+          </template>
+        </div>
+
+        <div
+          class="font-mono text-[10px] tracking-wider uppercase text-sky-900 block mb-4 font-bold flex items-center gap-1.5 border-t border-sky-400/20 pt-6">
+          <span>🔑 API Keys</span>
+          <span class="tst-tooltip-trigger" @click.stop="showHelp('apiKeys')">?</span>
+        </div>
+        <p class="text-sm text-sky-900/70 mb-5 leading-relaxed">Keys are stored in your browser's local storage only —
+          never sent anywhere except directly to each AI provider's API.</p>
+
+        <template x-for="svc in services" :key="svc.id">
+          <div class="tst-glass rounded-2xl p-5 mb-4 transition-all hover:bg-white/65">
+            <div class="flex items-center gap-2.5 mb-3.5">
+              <div class="text-xl" x-text="svc.icon"></div>
+              <div>
+                <div class="font-mono text-[13px] font-medium tracking-wide uppercase text-ocean" x-text="svc.name">
+                </div>
+                <div class="text-xs text-sky-800 mt-0.5" x-text="svc.sub"></div>
+              </div>
+              <a :href="svc.link" target="_blank" class="ml-auto text-xs text-sky-600 font-medium hover:underline">Get
+                key →</a>
+            </div>
+            <div class="flex gap-2" x-show="svc.id !== 'ollama'">
+              <input :type="svc.showKey ? 'text' : 'password'"
+                class="flex-1 px-4 py-2.5 tst-glass-input rounded-xl font-mono text-[13px] text-ocean outline-none transition-all"
+                x-model="keys[svc.keyId]" :placeholder="svc.placeholder" />
+              <button @click="svc.showKey = !svc.showKey"
+                class="px-3 tst-glass rounded-xl hover:bg-white/60 transition-colors">
+                <span x-text="svc.showKey ? '🕶️' : '👁️'"></span>
+              </button>
+            </div>
+
+            <div x-show="svc.id === 'ollama'" class="space-y-4">
+              <div>
+                <label class="font-mono text-xs tracking-wider uppercase text-sky-900 block mb-1.5 font-medium">Server
+                  URL <span class="tst-tooltip-trigger" @click.stop="showHelp('ollama')">?</span></label>
+                <div class="flex gap-2">
+                  <select x-model="ollamaUrl"
+                    class="flex-1 px-4 py-2.5 tst-glass-input rounded-xl font-mono text-[13px] text-ocean outline-none appearance-none transition-all">
+                    <option value="http://127.0.0.1:11434">http://127.0.0.1:11434 (Standard)</option>
+                    <option value="http://localhost:11434">http://localhost:11434 (Localhost)</option>
+                  </select>
+                  <button @click="fetchOllamaModels"
+                    class="bg-sky-500 text-white px-4 py-2 font-mono text-xs rounded-xl hover:bg-sky-600 transition-all disabled:opacity-50 font-medium"
+                    :disabled="isFetchingModels">
+                    <span x-show="!isFetchingModels">↻ Fetch</span>
+                    <span x-show="isFetchingModels" class="flex items-center gap-1">
+                      <div class="tst-spin !w-3 !h-3"></div> Loading
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <div x-data="{ showOllamaHelp: false }">
+                <div class="flex items-center justify-between mb-1.5">
+                  <label class="font-mono text-xs tracking-wider uppercase text-sky-900 block font-medium">Available
+                    Models</label>
+                  <button @click="showOllamaHelp = !showOllamaHelp"
+                    class="text-[10px] text-sky-600 font-medium hover:underline">Ollama Help?</button>
+                </div>
+                <!-- Inline Help Toggle -->
+                <div x-show="showOllamaHelp" x-transition
+                  class="mb-3 px-4 py-3 bg-white/40 border border-sky-200 rounded-xl text-sky-900 text-xs leading-relaxed">
+                  <strong>Still not working?</strong><br>
+                  If quitting the app didn't work, a background process might be stuck. Open your terminal and run
+                  <code>killall Ollama</code>. Then run <code>OLLAMA_ORIGINS="*" ollama serve</code><br>
+                  <span class="mt-1 block opacity-80"><em>Tip: Try using <strong>127.0.0.1</strong> instead of <strong>localhost</strong> in the URL field.</em></span>
+                </div>
+                <select x-model="ollamaModel"
+                  class="w-full px-4 py-2.5 tst-glass-input rounded-xl font-mono text-[13px] text-ocean outline-none appearance-none">
+                  <option value="" x-show="ollamaModels.length === 0">— Click ↻ Fetch to load models —</option>
+                  <template x-for="m in ollamaModels" :key="m">
+                    <option :value="m" x-text="m" :selected="m === ollamaModel"></option>
+                  </template>
+                </select>
+                <div>
+                  <label class="font-mono text-xs tracking-wider uppercase text-sky-900 block mb-1.5 font-medium">Models
+                    Path (Optional)</label>
+                  <input type="text"
+                    class="w-full px-4 py-2.5 tst-glass-input rounded-xl font-mono text-[13px] text-ocean outline-none transition-all"
+                    x-model="ollamaModelsPath" placeholder="/Volumes/ExternalDrive/ollama/models" />
+                  <p class="text-[10px] text-sky-800/60 mt-1.5 leading-tight">If you store models on an external drive,
+                    enter the path above.</p>
+                </div>
+              </div>
+
+              <div class="font-mono text-xs mt-2 tracking-wide flex items-center gap-1.5 transition-all font-medium"
+                :class="isSvcReady(svc) ? 'text-green-600' : 'text-red-500'">
+                <div class="w-1.5 h-1.5 rounded-full" :class="isSvcReady(svc) ? 'bg-green-600' : 'bg-red-500'"></div>
+                <span x-text="svcStatusMessage(svc)"></span>
+              </div>
+            </div>
+        </template>
+
+        <!-- Custom Writing Instructions -->
+        <div class="pt-6 border-t border-sky-400/20">
+          <label
+            class="font-mono text-[10px] tracking-wider uppercase text-sky-900 block mb-2 font-bold flex items-center gap-1.5">
+            <span>🧠 Custom Writing Instructions</span>
+            <span class="text-[9px] bg-sky-100 text-sky-600 px-1.5 py-0.5 rounded-full lowercase font-normal">Global
+              Filter</span>
+            <span class="tst-tooltip-trigger" @click.stop="showHelp('customInstructions')">?</span>
+          </label>
+          <textarea x-model="customInstructions"
+            class="w-full px-4 py-3 tst-glass-input rounded-xl font-sans text-[13px] text-ocean outline-none min-h-[100px] transition-all resize-none placeholder-sky-800/40"
+            placeholder="e.g. Avoid meta-labels like 'Hook:', 'Body:', etc. Don't use too many emojis. Use Jim Walker's direct tone..."></textarea>
+          <p class="text-[10px] text-sky-800/70 mt-1.5 font-medium leading-relaxed">
+            Anything you type here will be fed to the AI as a permanent rule for all generated posts.
+          </p>
+        </div>
+      </div>
+      <div class="px-7 pb-7 border-t border-sky-400/10 pt-6">
+        <!-- Primary Actions -->
+        <div class="flex items-center justify-center gap-2.5 mb-5">
+          <button @click="saveKeys"
+            class="bg-sky-500 text-white border-none px-6 py-2.5 font-mono text-xs tracking-wider uppercase rounded-pill font-medium hover:bg-sky-600 transition-all shadow-lg active:scale-[0.98]">✓
+            Save Settings</button>
+          <button @click="closeModal"
+            class="tst-glass text-red-500 border-red-200/30 px-6 py-2.5 font-mono text-xs tracking-wider uppercase rounded-pill hover:bg-red-50/30 transition-all font-medium">Cancel</button>
+        </div>
+
+        <!-- Data Management Row -->
+        <div class="flex items-center justify-center gap-2.5 pt-5 border-t border-sky-400/5 relative">
+          <span class="tst-tooltip-trigger absolute -top-1.5 -right-1.5 z-[60]" @click.stop="showHelp('backupRestore')">?</span>
+          <button @click="exportBackup"
+            class="tst-glass text-sky-800 px-6 py-2.5 font-mono text-xs tracking-wider uppercase rounded-pill hover:bg-white/60 transition-all font-medium">📥
+            Backup All API Settings</button>
+          <label
+            class="tst-glass text-sky-800 px-6 py-2.5 font-mono text-xs tracking-wider uppercase rounded-pill hover:bg-white/60 transition-all font-medium cursor-pointer">📤
+            Restore
+            <input type="file" class="hidden" @change="importBackup" accept=".json" />
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN LAYOUT -->
+  <div
+    class="max-w-[1400px] mx-auto min-h-[calc(100vh-64px)] grid grid-cols-1 lg:grid-cols-[1fr,420px] gap-6 p-4 md:p-6">
+
+    <!-- LEFT PANEL — Input Form -->
+    <div class="tst-glass-strong rounded-[2rem] p-8 md:p-10">
+
+      <div
+        class="font-mono text-xs tracking-[3px] uppercase text-sky-800 mb-5 flex items-center gap-2.5 after:content-[''] after:flex-1 after:h-px after:bg-sky-400/40 tst-fade-up tst-fade-up-d1 font-medium relative">
+        🌍 Platform
+        <span class="tst-tooltip-trigger" @click.stop="showHelp('platforms')">?</span>
+      </div>
+      <div class="flex flex-wrap gap-2 mb-7 tst-fade-up tst-fade-up-d2">
+        <template x-for="p in platforms" :key="p.key">
+          <div
+            class="px-4 py-1.5 tst-glass rounded-pill font-mono text-sm tracking-wider uppercase cursor-pointer transition-all hover:bg-white/65 hover:text-sky-700 hover:scale-105 font-medium border-b-2 border-transparent"
+            :class="{
+              'bg-sky-500/20 border-sky-400 text-sky-900 font-semibold tst-pill-glow': selectedPlatform?.key === p.key,
+              'text-sky-800': selectedPlatform?.key !== p.key,
+              '!border-b-green-600/60': p.canDirect
+            }"
+            @click="pickPlatform(p)" x-text="p.name"></div>
+        </template>
+      </div>
+
+      <div
+        class="font-mono text-xs tracking-[3px] uppercase text-sky-800 mb-5 flex items-center gap-2.5 after:content-[''] after:flex-1 after:h-px after:bg-sky-400/40 tst-fade-up tst-fade-up-d3 font-medium">
+        📝 The 5 W's</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-7">
+        <div class="flex flex-col gap-1.5">
+          <label class="flex items-center gap-2 font-sans text-sm font-semibold text-sky-900 relative">
+            <span
+              class="flex items-center justify-center w-[26px] h-[26px] rounded-full flex-shrink-0 transition-all duration-300 text-xs"
+              :class="who.length > 0 ? 'bg-sky-500 text-white shadow-lg scale-110' : 'bg-sky-100 text-sky-600'">👤</span>
+            Who
+            <span class="tst-tooltip-trigger" @click.stop="showHelp('who')">?</span>
+          </label>
+          <input type="text" x-model="who" placeholder="Who are we talking to / about?"
+            class="w-full tst-glass-input rounded-xl px-4 py-3 font-sans text-sm text-ocean outline-none transition-all placeholder:text-sky-700/40" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between w-full">
+              <div class="flex items-center gap-2 relative">
+                <span
+                  class="flex items-center justify-center w-[26px] h-[26px] rounded-full flex-shrink-0 transition-all duration-300 text-xs"
+                  :class="what.length > 0 ? 'bg-teal-500 text-white shadow-lg scale-110' : 'bg-teal-100 text-teal-600'">📝</span>
+                What or URL
+                <span class="tst-tooltip-trigger" @click.stop="showHelp('what')">?</span>
+              </div>
+              <label class="flex items-center gap-2 cursor-pointer select-none group relative">
+                <span class="text-[10px] font-mono uppercase tracking-widest text-sky-900/40 group-hover:text-ocean transition-colors">Include URL</span>
+                <input type="checkbox" x-model="includeUrl" class="w-4 h-4 rounded border-sky-300 text-sky-500 focus:ring-sky-500 cursor-pointer" />
+                <span class="tst-tooltip-trigger" @click.stop="showHelp('urlToggle')">?</span>
+              </label>
+            </div>
+          <input type="text" x-model="what" placeholder="What's the big news or main topic?"
+            class="w-full tst-glass-input rounded-xl px-4 py-3 font-sans text-sm text-ocean outline-none transition-all placeholder:text-sky-700/40" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="flex items-center gap-2 font-sans text-sm font-semibold text-sky-900 relative">
+            <span
+              class="flex items-center justify-center w-[26px] h-[26px] rounded-full flex-shrink-0 transition-all duration-300 text-xs"
+              :class="where.length > 0 ? 'bg-indigo-500 text-white shadow-lg scale-110' : 'bg-indigo-100 text-indigo-600'">📍</span>
+            Where
+            <span class="tst-tooltip-trigger" @click.stop="showHelp('where')">?</span>
+          </label>
+          <input type="text" x-model="where" placeholder="Where is this happening or located?"
+            class="w-full tst-glass-input rounded-xl px-4 py-3 font-sans text-sm text-ocean outline-none transition-all placeholder:text-sky-700/40" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="flex items-center gap-2 font-sans text-sm font-semibold text-sky-900 relative">
+            <span
+              class="flex items-center justify-center w-[26px] h-[26px] rounded-full flex-shrink-0 transition-all duration-300 text-xs"
+              :class="why.length > 0 ? 'bg-violet-500 text-white shadow-lg scale-110' : 'bg-violet-100 text-violet-600'">💡</span>
+            Why
+            <span class="tst-tooltip-trigger" @click.stop="showHelp('why')">?</span>
+          </label>
+          <input type="text" x-model="why" placeholder="Why does this matter to the audience?"
+            class="w-full tst-glass-input rounded-xl px-4 py-3 font-sans text-sm text-ocean outline-none transition-all placeholder:text-sky-700/40" />
+        </div>
+        <div class="flex flex-col gap-1.5 sm:col-span-2">
+          <label class="flex items-center gap-2 font-sans text-sm font-semibold text-sky-900 relative">
+            <span
+              class="flex items-center justify-center w-[26px] h-[26px] rounded-full flex-shrink-0 transition-all duration-300 text-[10px]"
+              :class="(whenDate && whenTime) ? 'bg-orange-500 text-white shadow-lg scale-110' : 'bg-orange-100 text-orange-600'">⏰</span>
+            When
+            <span class="tst-tooltip-trigger" @click.stop="showHelp('when')">?</span>
+          </label>
+          <div class="grid grid-cols-2 gap-2.5">
+            <input type="date" x-model="whenDate"
+              class="w-full tst-glass-input rounded-xl px-4 py-3 font-sans text-sm text-ocean outline-none transition-all" />
+            <input type="time" x-model="whenTime"
+              class="w-full tst-glass-input rounded-xl px-4 py-3 font-sans text-sm text-ocean outline-none transition-all" />
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5 sm:col-span-2">
+          <label class="flex items-center gap-2 font-sans text-sm font-semibold text-sky-900 relative">
+            <span
+              class="bg-sky-400/40 text-sky-900 w-[26px] h-[26px] flex items-center justify-center rounded-full flex-shrink-0 text-sm font-bold">#</span>
+            Hashtags
+            <span class="tst-tooltip-trigger" @click.stop="showHelp('hashtags')">?</span>
+          </label>
+          <input type="text" x-model="hashtags" placeholder="#socialmedia #marketing (space or comma separated)"
+            class="w-full tst-glass-input rounded-xl px-4 py-3 font-sans text-sm text-ocean outline-none transition-all placeholder:text-sky-700/40" />
+        </div>
+        <div class="flex flex-col gap-1.5 sm:col-span-2">
+          <label class="flex items-center gap-2 font-sans text-sm font-semibold text-sky-900 relative">
+            <span
+              class="bg-sky-400/40 text-sky-900 w-[26px] h-[26px] flex items-center justify-center rounded-full flex-shrink-0 text-sm">✦</span>
+            Tone
+            <span class="tst-tooltip-trigger" @click.stop="showHelp('tone')">?</span>
+          </label>
+          <select x-model="tone"
+            class="w-full tst-glass-input rounded-xl px-4 py-3 font-sans text-sm text-ocean outline-none transition-all appearance-none">
+            <option value="casual">Casual & Friendly</option>
+            <option value="professional">Professional</option>
+            <option value="exciting">Exciting & Energetic</option>
+            <option value="informative">Informative & Educational</option>
+            <option value="humorous">Humorous & Witty</option>
+            <option value="inspirational">Inspirational & Motivational</option>
+            <option value="urgent">Urgent & Breaking News</option>
+            <option value="storytelling">Story-driven Narrative</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1.5 sm:col-span-2">
+          <label class="flex items-center gap-2 font-sans text-sm font-semibold text-sky-900 relative">
+            <span
+              class="bg-sky-400/40 text-sky-900 w-[26px] h-[26px] flex items-center justify-center rounded-full flex-shrink-0 text-sm">📏</span>
+            Content Length
+            <span class="tst-tooltip-trigger" @click.stop="showHelp('length')">?</span>
+          </label>
+          <div class="flex justify-between mt-1 text-xs font-mono text-sky-800 uppercase tracking-wider font-medium">
+            <span>Concise</span>
+            <span>Balanced</span>
+            <span>Deep Dive</span>
+          </div>
+          <input type="range" x-model="contentLength" min="1" max="3" step="1"
+            class="w-full mt-1.5 cursor-pointer accent-sky-500" />
+        </div>
+      </div>
+
+      <div
+        class="font-mono text-xs tracking-[3px] uppercase text-sky-800 mb-5 flex items-center gap-2.5 after:content-[''] after:flex-1 after:h-px after:bg-sky-400/40 tst-fade-up tst-fade-up-d4 font-medium relative">
+        📸 Photo Upload
+        <span class="tst-tooltip-trigger" @click.stop="showHelp('photos')">?</span>
+      </div>
+      <div
+        class="tst-glass rounded-2xl border-2 p-7 text-center cursor-pointer transition-all duration-300 mb-7"
+        :class="photos.length > 0 ? 'border-sky-400 bg-white/60 shadow-lg shadow-sky-400/10' : 'border-dashed border-sky-300/50 hover:border-sky-400 hover:bg-white/60'"
+        @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="handleDrop($event)"
+        @click="$refs.fileInput.click()">
+        <input type="file" x-ref="fileInput" @change="handleUpload($event)" accept="image/*" multiple class="hidden" />
+        <div class="text-3xl mb-2">📸</div>
+        <div class="text-sm text-sky-800 tracking-wide">Drop your visual magic here or <strong
+            class="text-sky-600 font-semibold">click to browse</strong> ✨</div>
+        <div class="flex flex-wrap gap-2.5 mt-3.5" x-show="photos.length > 0">
+          <template x-for="(p, i) in photos" :key="i">
+            <div class="relative w-20 h-20 rounded-xl overflow-hidden group shadow-md tst-bounce-in">
+              <img :src="p.url" class="w-full h-full object-cover" />
+              <button @click.stop="removePhoto(i)"
+                class="absolute top-1 right-1 bg-ocean/80 text-white w-5 h-5 rounded-full flex items-center justify-center text-[9px] opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <div
+        class="font-mono text-xs tracking-[3px] uppercase text-sky-800 mb-5 flex items-center gap-2.5 after:content-[''] after:flex-1 after:h-px after:bg-sky-400/40 tst-fade-up tst-fade-up-d5 font-medium">
+        ⚡ Actions</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-7 tst-fade-up tst-fade-up-d5">
+        <div class="relative">
+          <button @click="doGenerate" :disabled="isGenerating"
+            class="tst-btn-shimmer w-full bg-sky-500 text-white px-4 py-3 rounded-pill font-mono text-[11px] md:text-xs tracking-wider uppercase font-semibold hover:bg-sky-600 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-sky-500/20">
+            <div x-show="isGenerating" class="tst-spin !w-3.5 !h-3.5"></div>
+            <span x-text="isGenerating ? loadingMessage : 'Generate Post'"></span>
+          </button>
+          <span class="tst-tooltip-trigger absolute -top-1.5 -right-1.5 z-[60]" @click.stop="showHelp('generate')">?</span>
+        </div>
+        <button @click="regeneratePost" :disabled="isGenerating || !generatedPost"
+          class="tst-glass text-ocean px-4 py-3 rounded-pill font-mono text-[11px] md:text-xs tracking-wider uppercase font-semibold hover:bg-white/65 transition-all hover:scale-105 active:scale-[0.95] disabled:opacity-40 disabled:cursor-not-allowed">↻
+          Regenerate</button>
+        <button @click="clearForm"
+          class="tst-glass text-ocean px-4 py-3 rounded-pill font-mono text-[11px] md:text-xs tracking-wider uppercase font-semibold hover:bg-white/65 transition-all hover:scale-105 active:scale-[0.95]">↺
+          Clear All</button>
+        <button @click="googleSearch"
+          class="tst-glass text-ocean px-4 py-3 rounded-pill font-mono text-[11px] md:text-xs tracking-wider uppercase font-semibold hover:bg-white/65 transition-all hover:scale-105 active:scale-[0.95] flex items-center justify-center gap-2">
+          <span
+            class="text-base font-bold bg-gradient-to-br from-[#4285F4] via-[#EA4335] to-[#34A853] bg-clip-text text-transparent">G</span>
+          AI Search
+        </button>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL — Preview & Calendar -->
+    <div class="tst-glass rounded-[2rem] p-8 md:p-8">
+
+      <div
+        class="font-mono text-xs tracking-[3px] uppercase text-sky-800 mb-5 flex items-center gap-2.5 after:content-[''] after:flex-1 after:h-px after:bg-sky-400/40 font-medium">
+        👁️ Post Preview</div>
+
+      <div x-show="isGenerating"
+        class="flex items-center gap-2.5 px-5 py-3.5 tst-glass rounded-xl mb-4 transition-all border border-sky-300/30"
+        x-transition>
+        <div class="tst-spin"></div>
+          <div class="mt-4 text-center text-deep text-sm animate-pulse flex items-center justify-center gap-2"
+          x-text="getProviderLabel() + ' is writing your post...'"></div>
+      </div>
+
+      <div class="tst-glass-strong rounded-2xl p-6 mb-6 transition-all hover:shadow-xl">
+        <div
+          class="font-mono text-[11px] tracking-[2px] uppercase text-sky-800 mb-3 flex items-center gap-1.5 font-medium">
+          <div class="w-1.5 h-1.5 rounded-full bg-sky-500"></div>
+          <span x-text="selectedPlatform?.name || 'Platform'"></span>
+          <span class="ml-auto text-[10px] px-2.5 py-0.5 tst-glass-dark text-white rounded-pill font-medium"
+            x-text="getProviderLabel()"></span>
+        </div>
+
+        <div x-show="!isEditing" class="text-sm leading-relaxed whitespace-pre-wrap break-words min-h-[60px]"
+          :class="!generatedPost ? 'text-sky-700/50 italic tst-typewriter-cursor' : 'text-ocean'"
+          x-text="generatedPost || emptyStateMessage"></div>
+
+        <div x-show="isEditing" class="space-y-2">
+          <textarea x-model="tempPost" rows="6"
+            class="w-full text-sm leading-relaxed p-3 tst-glass-input rounded-xl outline-none transition-all text-ocean"></textarea>
+          <div class="flex gap-2">
+            <button @click="saveEdit"
+              class="flex-1 bg-sky-500 text-white py-2.5 rounded-pill font-mono text-sm tracking-wider uppercase font-medium hover:scale-105 active:scale-[0.95] transition-all">✓
+              Save</button>
+            <button @click="cancelEdit"
+              class="flex-1 tst-glass text-ocean py-2.5 rounded-pill font-mono text-sm tracking-wider uppercase font-medium hover:scale-105 active:scale-[0.95] transition-all">✕
+              Cancel</button>
+          </div>
+        </div>
+
+        <div class="mt-3.5 rounded-xl overflow-hidden grid gap-2"
+          :class="photos.length > 1 ? 'grid-cols-2' : 'grid-cols-1'" x-show="photos.length > 0">
+          <template x-for="(p, i) in photos.slice(0, 4)" :key="i">
+            <img :src="p.url" class="w-full h-40 object-cover rounded-xl border-none" />
+          </template>
+        </div>
+
+        <div class="mt-3.5 h-[3px] bg-sky-200/50 rounded-full overflow-hidden">
+          <div class="h-full transition-all duration-300 rounded-full"
+            :style="'width: ' + Math.min(charProgress, 100) + '%'" :class="charBarColor"></div>
+        </div>
+        <div class="flex justify-between font-mono text-xs text-sky-800 mt-1.5 font-medium">
+          <span x-show="generatedPost" x-text="wordCount + ' words'" class="text-sky-700/60"></span>
+          <span :class="charProgress > 100 ? 'text-red-500 font-bold' : ''" x-text="charCountLabel"></span>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mt-4">
+          <button @click="copyPost"
+            class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-pill font-mono text-sm tracking-wider uppercase font-semibold bg-sky-500 text-white hover:bg-sky-600 transition-all hover:scale-105 active:scale-[0.95] shadow-md whitespace-nowrap"
+            x-text="copyLabel">⎘ Copy</button>
+          <button @click="startEdit"
+            class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-pill font-mono text-sm tracking-wider uppercase font-semibold tst-glass text-ocean hover:bg-white/65 transition-all hover:scale-105 active:scale-[0.95] whitespace-nowrap">✎
+            Edit</button>
+          <button @click="addToSched"
+            class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-pill font-mono text-sm tracking-wider uppercase font-semibold tst-glass text-ocean hover:bg-white/65 transition-all hover:scale-105 active:scale-[0.95] whitespace-nowrap">+
+            Schedule</button>
+        </div>
+        <div class="relative w-full mt-2">
+          <button @click="postDirectly" x-show="selectedPlatform && selectedPlatform.canDirect"
+            class="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-pill font-mono text-sm tracking-wider uppercase font-semibold bg-green-500 text-white hover:bg-green-600 transition-all shadow-md">
+            🚀 Post directly
+          </button>
+          <span class="tst-tooltip-trigger absolute -top-1.5 -right-1.5 z-[60]" x-show="selectedPlatform && selectedPlatform.canDirect" @click.stop="showHelp('postDirect')">?</span>
+        </div>
+      </div>
+
+      <div
+        class="font-mono text-xs tracking-[3px] uppercase text-sky-800 mb-5 flex items-center gap-2.5 after:content-[''] after:flex-1 after:h-px after:bg-sky-400/40 font-medium relative">
+        📅 Schedule Post
+        <span class="tst-tooltip-trigger" @click.stop="showHelp('schedule')">?</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2.5 mb-4">
+        <div class="flex flex-col gap-1">
+          <label class="font-mono text-xs text-sky-900 uppercase tracking-wider font-medium">Publish Date</label>
+          <input type="date" x-model="scheduleDate"
+            class="w-full tst-glass-input rounded-xl px-3.5 py-2.5 font-sans text-sm text-ocean outline-none transition-all" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="font-mono text-xs text-sky-900 uppercase tracking-wider font-medium">Publish Time</label>
+          <input type="time" x-model="scheduleTime"
+            class="w-full tst-glass-input rounded-xl px-3.5 py-2.5 font-sans text-sm text-ocean outline-none transition-all" />
+        </div>
+      </div>
+      <button @click="addToSched"
+        class="w-full bg-sky-500 text-white py-3 rounded-pill font-mono text-sm tracking-wider uppercase font-semibold hover:bg-sky-600 transition-all mb-8 shadow-lg shadow-sky-500/15">+
+        Add to Content Calendar</button>
+
+      <div class="mt-2">
+        <div
+          class="font-mono text-xs tracking-[3px] uppercase text-sky-800 mb-5 flex items-center gap-2.5 after:content-[''] after:flex-1 after:h-px after:bg-sky-400/40 font-medium relative">
+          Content Calendar
+          <span class="tst-tooltip-trigger" @click.stop="showHelp('calendar')">?</span>
+          <div class="flex gap-2 ml-auto pr-2 items-center">
+            <button @click="exportCSV"
+              class="tst-glass text-ocean px-3 py-1 rounded-pill font-mono text-xs tracking-wider uppercase font-medium hover:bg-white/65 transition-all hover:scale-105 active:scale-[0.95]">
+              Export</button>
+            <button @click="clearSched"
+              class="tst-glass text-red-500 border-red-200/30 px-3 py-1 rounded-pill font-mono text-xs tracking-wider uppercase font-medium hover:bg-red-50/30 transition-all hover:scale-105 active:scale-[0.95]">
+              Clear</button>
+          </div>
+        </div>
+        <div class="max-h-[160px] overflow-hidden tst-glass rounded-2xl">
+          <div class="overflow-x-auto tst-scrollbar h-full">
+            <table class="w-full text-left border-collapse min-w-[500px]">
+              <thead>
+                <tr class="tst-glass-dark text-white font-mono text-[10px] tracking-widest uppercase sticky top-0 z-10">
+                  <th class="px-3 py-2.5 font-semibold">AI</th>
+                  <th class="px-3 py-2.5 font-semibold">Platform</th>
+                  <th class="px-3 py-2.5 font-semibold">Post</th>
+                  <th class="px-3 py-2.5 font-semibold">Date</th>
+                  <th class="px-3 py-2.5 font-semibold">Time</th>
+                  <th class="w-10"></th>
+                </tr>
+              </thead>
+              <tbody class="text-xs text-ocean divide-y divide-white/20">
+                <template x-if="schedule.length === 0">
+                  <tr>
+                    <td colspan="6" class="px-3 py-10 text-center font-mono text-xs text-sky-800 tracking-wider uppercase">No
+                      posts scheduled yet</td>
+                  </tr>
+                </template>
+                <template x-for="(item, index) in schedule" :key="index">
+                  <tr class="hover:bg-white/30 transition-colors">
+                    <td class="px-3 py-2.5 font-mono text-xs" x-text="item.ai"></td>
+                    <td class="px-3 py-2.5" x-text="item.platform"></td>
+                    <td class="px-3 py-2.5 truncate max-w-[140px]" x-text="item.post"></td>
+                    <td class="px-3 py-2.5 whitespace-nowrap" x-text="item.date"></td>
+                    <td class="px-3 py-2.5" x-text="item.time"></td>
+                    <td class="px-3 py-2.5 text-right">
+                      <button @click="removeFromSched(index)" title="Remove from calendar"
+                        class="w-7 h-7 inline-flex items-center justify-center rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all text-xs shadow-sm">✕</button>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Post History Section -->
+        <div class="tst-glass-strong rounded-[2rem] p-6 md:p-8 mt-6 tst-fade-up" x-show="postHistory.length > 0" x-transition>
+          <div
+            class="font-mono text-xs tracking-[3px] uppercase text-sky-800 mb-5 flex items-center justify-between font-medium">
+            <div class="flex items-center gap-2.5 relative">📚 Post History
+              <span class="tst-tooltip-trigger" @click.stop="showHelp('history')">?</span>
+              <span class="text-[9px] text-sky-700/50 normal-case tracking-normal"
+                x-text="'(' + postHistory.length + ')'">(0)</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button @click="toggleHistory"
+                class="text-xs text-sky-600/60 hover:text-sky-600 transition-all hover:scale-105 active:scale-[0.95] uppercase tracking-wider font-bold"
+                x-text="showHistory ? 'Hide' : 'Show'">Show</button>
+              <button @click="clearHistory"
+                class="text-xs text-sky-600/60 hover:text-sky-600 transition-all hover:scale-105 active:scale-[0.95] uppercase tracking-wider font-bold">Clear</button>
+            </div>
+          </div>
+
+          <div x-show="showHistory" x-transition
+            class="max-h-[350px] overflow-y-auto space-y-2.5 pr-2 tst-scrollbar">
+            <template x-for="entry in postHistory" :key="entry.id">
+              <div class="tst-glass rounded-xl p-4 group hover:bg-white/60 transition-all">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-mono text-sky-900/40" x-text="entry.date + ' • ' + entry.time"></span>
+                    <span class="text-[10px] font-mono px-1.5 py-0.5 tst-glass-dark text-white rounded-pill"
+                      x-text="entry.platform"></span>
+                    <span class="text-[10px] font-mono text-sky-700/50" x-text="entry.ai"></span>
+                  </div>
+                  <button @click="removeFromHistory(entry.id)"
+                    class="text-red-400 hover:text-red-600 transition-colors text-xs opacity-0 group-hover:opacity-100">✕</button>
+                </div>
+                <div class="text-xs text-sky-900/70 leading-relaxed line-clamp-2" x-text="entry.post"></div>
+                <button @click="restoreFromHistory(entry)"
+                  class="mt-2 text-[10px] font-mono text-sky-600 hover:text-sky-800 uppercase tracking-wider font-bold transition-all hover:scale-105 active:scale-[0.95]">↻
+                  Restore to Post Preview</button>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Activity Log Section -->
+        <div class="tst-glass-strong rounded-[2rem] p-6 md:p-8 mt-6 tst-fade-up" x-show="activityLogs.length > 0" x-transition>
+          <div
+            class="font-mono text-xs tracking-[3px] uppercase text-sky-800 mb-5 flex items-center justify-between font-medium">
+            <div class="flex items-center gap-2.5 relative">📜 Activity Log
+              <span class="tst-tooltip-trigger" @click.stop="showHelp('activity')">?</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button @click="exportLog"
+                class="text-xs text-sky-600/60 hover:text-sky-600 transition-all hover:scale-105 active:scale-[0.95] uppercase tracking-wider font-bold">Export</button>
+              <button @click="clearLogs"
+                class="text-xs text-sky-600/60 hover:text-sky-600 transition-all hover:scale-105 active:scale-[0.95] uppercase tracking-wider font-bold">Clear</button>
+            </div>
+          </div>
+
+          <div class="max-h-[160px] overflow-y-scroll space-y-2 pr-2 tst-scrollbar">
+            <template x-for="log in activityLogs" :key="log.id">
+              <div class="flex items-start gap-3 py-1.5 border-b border-sky-400/10 last:border-0 tst-fade-up">
+                <span class="font-mono text-[10px] text-sky-900/40 whitespace-nowrap mt-0.5" x-text="log.time"></span>
+                <span class="text-xs text-sky-900/80 leading-relaxed" x-text="log.msg"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+    <!-- TOAST -->
+    <div
+      class="fixed bottom-8 left-1/2 -translate-x-1/2 font-mono text-xs tracking-wider uppercase px-6 py-3 rounded-pill pointer-events-none z-[1000] whitespace-nowrap shadow-2xl font-medium"
+      :class="toast.err ? 'bg-red-600 text-white' : 'tst-glass-dark text-white'" x-show="toast.show" x-transition>
+      <span x-text="toast.msg"></span>
+    </div>
+
+    <!-- GLOBAL HELP MODAL -->
+    <div class="tst-help-overlay" x-show="isHelpOpen" @click.self="closeHelp" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" style="display: none;">
+      <div class="tst-help-modal tst-modal-animate">
+        <div class="tst-help-header">
+          <div class="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center text-xl">💡</div>
+          <div class="text-xl font-bold text-ocean" x-text="helpTitle"></div>
+        </div>
+        <div class="tst-help-body" x-text="helpContent"></div>
+        <div class="tst-help-footer">
+          <button @click="closeHelp" class="tst-help-btn active:scale-95 shadow-lg shadow-sky-500/20">Got it!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer watermark — Symmetrical Mirror of Header -->
+    <footer class="tst-glass-strong sticky bottom-0 z-50 rounded-t-[2rem] mx-2 mb-0 px-4 md:px-12 h-16 flex items-center justify-between border-t-0">
+      <div class="flex items-center truncate">
+        <img src="assets/img/apple-touch-icon.png" alt="Logo" class="h-8 w-8 mr-1.5 md:mr-2 rounded-md shadow-sm opacity-90">
+        <div class="text-xl md:text-2xl font-bold tracking-tight text-ocean truncate">SocialToolkit <span class="text-[10px] md:text-xs text-sky-900/30 uppercase tracking-widest font-mono ml-1 align-middle">v4.7.6</span></div>
+      </div>
+      <div class="flex items-center gap-3">
+        <p class="text-[10px] md:text-[11px] font-mono tracking-widest uppercase text-ocean/50 font-medium whitespace-nowrap">
+          Made with ❤️ <span class="hidden sm:inline">|</span> TVCNet
+        </p>
+      </div>
+    </footer>
+
+    <!-- Core Modules -->
+    <script src="assets/js/tst-config.js?v=4.7.6"></script>
+    <script src="assets/js/tst-utils.js?v=4.7.6"></script>
+    <script src="assets/js/tst-services.js?v=4.7.6"></script>
+    <script src="assets/js/tst-content.js?v=4.7.6"></script>
+    
+    <!-- Alpine Controller -->
+    <script>document.write('<script src="assets/js/social-toolkit.js?v=' + Date.now() + '"><\/script>');</script>
+    <!--
+TVCNet SocialToolkit is an independent project by TVCNet.
+Inspired by PostCraft, created by Bobby Taylor:
+https://github.com/bobbyrtaylor2/PostCraft/
+Not affiliated with or endorsed by Bobby Taylor.
+Love the inspiration, improving the expression for all.
+-->
+</body>
+
+</html>
