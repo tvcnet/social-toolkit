@@ -2,6 +2,10 @@
   <img src="assets/img/tst-hero.jpg" alt="TVCNet Social Toolkit Banner" width="800">
 </p>
 
+<p align="center">
+  <a href="https://www.reddit.com/r/tvcnet/comments/1rummzc/tvcnet_socialtoolkit_made_for_tvcnet_website/"><img src="https://img.shields.io/badge/Reddit-Community_Discussion-FF4500?style=for-the-badge&logo=reddit" alt="Reddit Community"></a>
+</p>
+
 # TVCNet SocialToolkit v4.7.6 — AI-Powered Social Media Toolkit
 
 ### AI-Powered Social Media Toolkit for Nonprofits & Small Businesses
