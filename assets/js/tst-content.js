@@ -7,11 +7,11 @@
 
 const TST_ContentEngine = {
   buildPrompt(data) {
-    const { platform, who, what, where, why, whenDate, whenTime, hashtags, tone, length, customInstructions, includeUrl, photos } = data;
+    const { platform, who, what, where, why, whenDate, whenTime, hashtags, tone, contentLength, customInstructions, includeUrl, photos } = data;
     
     if (!platform) return 'Write a general post based on these details:';
     
-    const lenLabel = ['CONCISE', 'BALANCED', 'DEEP DIVE'][length - 1];
+    const lenLabel = ['CONCISE', 'BALANCED', 'DEEP DIVE'][contentLength - 1];
     const when = whenDate ? new Date(whenDate + 'T12:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + (whenTime ? ' at ' + whenTime : '') : '';
     const guide = TST_PLATFORM_GUIDE[platform.key] || { style: 'Professional and engaging social media post.' };
     const imgInstruction = photos && photos.length > 0 ? '\nIMAGE CONTEXT:\nI have attached images to this prompt. Please analyze them and incorporate relevant visual details into the post to make it more engaging.\n' : '';

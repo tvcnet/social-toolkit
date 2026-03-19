@@ -185,7 +185,9 @@ document.addEventListener('alpine:init', () => {
     get charCount() { return this.generatedPost.length; },
     get wordCount() {
       if (!this.generatedPost) return 0;
-      return this.generatedPost.trim().split(/\s+/).length;
+      const text = this.generatedPost.trim();
+      if (!text) return 0;
+      return text.split(/\s+/).length;
     },
     get charBarColor() {
       if (!this.selectedPlatform || !this.generatedPost) return 'bg-sky-400';
@@ -334,6 +336,8 @@ document.addEventListener('alpine:init', () => {
 
         // Pass 2: Final Polish if over limit
         if (this.charCount > this.selectedPlatform.lim) {
+          clearInterval(msgInterval);
+          this.loadingMessage = "Polishing text to fit platform limits... 🛠️";
           this.logAction(`Post over limit (${this.charCount}/${this.selectedPlatform.lim}). Polishing... 🛠️`);
           this.generatedPost = await TST_ContentEngine.polish(this.generatedPost, this.selectedPlatform.lim, this);
         }
