@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/img/tst-hero.jpg" alt="TVCNet Social Toolkit Banner" width="800">
+</p>
+
 # TVCNet SocialToolkit v4.7.6 — AI-Powered Social Media Toolkit
 
 ### AI-Powered Social Media Toolkit for Nonprofits & Small Businesses
