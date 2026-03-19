@@ -325,10 +325,10 @@ document.addEventListener('alpine:init', () => {
         this.logAction(`Generating post for ${this.selectedPlatform.name} using ${this.getProviderLabel()}... ⏳`);
         
         let txt = '';
-        if (this.aiProv === 'claude') txt = await TST_AIService.callClaude(p, this.keys.anthropic);
-        else if (this.aiProv === 'openai') txt = await TST_AIService.callOpenAI(p, this.keys.openai);
-        else if (this.aiProv === 'gemini') txt = await TST_AIService.callGemini(p, this.keys.google);
-        else if (this.aiProv === 'ollama') txt = await TST_AIService.callOllama(p, this.ollamaUrl, this.ollamaModel);
+        if (this.aiProv === 'claude') txt = await TST_AIService.callClaude(p, this.keys.anthropic, this.photos);
+        else if (this.aiProv === 'openai') txt = await TST_AIService.callOpenAI(p, this.keys.openai, this.photos);
+        else if (this.aiProv === 'gemini') txt = await TST_AIService.callGemini(p, this.keys.google, this.photos);
+        else if (this.aiProv === 'ollama') txt = await TST_AIService.callOllama(p, this.ollamaUrl, this.ollamaModel, this.photos);
 
         this.generatedPost = txt.trim();
 
