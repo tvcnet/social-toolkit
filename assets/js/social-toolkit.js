@@ -125,18 +125,6 @@ document.addEventListener('alpine:init', () => {
         }
       });
 
-      // Keyboard shortcuts
-      document.addEventListener('keydown', (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-          e.preventDefault();
-          if (!this.isGenerating && this.isConfigured) this.generate();
-        }
-        if (e.key === 'Escape' && this.showModal) {
-          e.preventDefault();
-          this.closeModal();
-        }
-      });
-
       // Smart Auto-Selection (v4.2.0)
       this.$nextTick(() => {
         if (!localStorage.getItem('tst_ai_provider')) {
@@ -351,9 +339,9 @@ document.addEventListener('alpine:init', () => {
         }
 
         // Final Safety Nets
-        this.generatedPost = tstStripMarkdown(this.generatedPost);
+        this.generatedPost = TST_Utils.stripMarkdown(this.generatedPost);
         if (!this.includeUrl) {
-          this.generatedPost = tstStripLinks(this.generatedPost);
+          this.generatedPost = TST_Utils.stripLinks(this.generatedPost);
         }
 
         // Auto-save to history

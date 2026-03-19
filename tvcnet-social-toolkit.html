@@ -58,7 +58,10 @@
   <link rel="stylesheet" href="assets/css/social-toolkit.css?v=4.7.6">
 </head>
 
-<body class="font-sans text-ocean min-h-screen tst-sky-bg" x-data="socialToolkit" x-cloak>
+<body class="font-sans text-ocean min-h-screen tst-sky-bg" x-data="socialToolkit" x-cloak
+      @keydown.window.meta.enter.prevent="if(!isGenerating && isConfigured) generate()"
+      @keydown.window.ctrl.enter.prevent="if(!isGenerating && isConfigured) generate()"
+      @keydown.window.escape="if(showModal) { $event.preventDefault(); closeModal(); }">
 
   <!-- HEADER — Frosted Glass Nav -->
   <header
