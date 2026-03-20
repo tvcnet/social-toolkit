@@ -6,7 +6,7 @@
   <a href="https://www.reddit.com/r/tvcnet/comments/1rummzc/tvcnet_socialtoolkit_made_for_tvcnet_website/"><img src="https://img.shields.io/badge/Reddit-Community_Discussion-FF4500?style=for-the-badge&logo=reddit" alt="Reddit Community"></a>
 </p>
 
-# TVCNet SocialToolkit v4.7.6 — AI-Powered Social Media Toolkit
+# TVCNet SocialToolkit v4.7.7 — AI-Powered Social Media Toolkit
 
 ### AI-Powered Social Media Toolkit for Nonprofits & Small Businesses
 
@@ -70,6 +70,7 @@ I'll be honest—SocialToolkit isn't for everyone. It's built for a specific kin
 | Feature | Details |
 |---|---|
 | Multi-AI Support | Claude 3.5 Haiku, GPT-5 Nano, Gemma 3 27B, and local Ollama models |
+| Multimodal Vision | **[NEW!]** Upload photos for AI-powered visual context — all 4 providers support image analysis |
 | 7 Platforms | X, Instagram, Facebook, Threads, TikTok, Bluesky, LinkedIn |
 | Activity Log | Real-time terminal-style feed of all generation, copy, and scheduling events |
 | Custom Instructions | Save persistent writing rules (e.g., "Always use formal tone," "No hashtags") |
@@ -77,7 +78,7 @@ I'll be honest—SocialToolkit isn't for everyone. It's built for a specific kin
 | Auto-Sized Posts | Each post is written to the exact character limit of the chosen platform |
 | Direct Intent URLs | **[NEW!]** One-click "Post directly" button for supported platforms (X, LinkedIn, Bluesky) to open the native compose box with text pre-filled |
 | CSV Export | Export your full content calendar for use in spreadsheets or scheduling tools |
-| Clean Architecture | **[NEW!]** Fully decoupled UI (Alpine.js) from Business Logic (AIService) and Storage (StorageManager) |
+| Clean Architecture | Fully decoupled UI (Alpine.js) from Business Logic (AIService) and Storage (StorageManager) |
 | Interactive Help | **[NEW!]** 22 strategic guidance points integrated across every panel for content optimization |
 | Persistent Sync | Ollama models and settings persist across refreshes and hardware restarts |
 | Full Privacy | All data stays in your browser — nothing is sent to any external server |

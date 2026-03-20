@@ -2,7 +2,7 @@
  * File: social-toolkit.js
  * Description: Main Alpine.js Controller for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.7.6
+ * Version: 4.7.7
  */
 
 document.addEventListener('alpine:init', () => {
@@ -125,18 +125,6 @@ document.addEventListener('alpine:init', () => {
         }
       });
 
-      // Keyboard shortcuts
-      document.addEventListener('keydown', (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-          e.preventDefault();
-          if (!this.isGenerating && this.isConfigured) this.generate();
-        }
-        if (e.key === 'Escape' && this.showModal) {
-          e.preventDefault();
-          this.closeModal();
-        }
-      });
-
       // Smart Auto-Selection (v4.2.0)
       this.$nextTick(() => {
         if (!localStorage.getItem('tst_ai_provider')) {
@@ -197,7 +185,9 @@ document.addEventListener('alpine:init', () => {
     get charCount() { return this.generatedPost.length; },
     get wordCount() {
       if (!this.generatedPost) return 0;
-      return this.generatedPost.trim().split(/\s+/).length;
+      const text = this.generatedPost.trim();
+      if (!text) return 0;
+      return text.split(/\s+/).length;
     },
     get charBarColor() {
       if (!this.selectedPlatform || !this.generatedPost) return 'bg-sky-400';
@@ -337,23 +327,25 @@ document.addEventListener('alpine:init', () => {
         this.logAction(`Generating post for ${this.selectedPlatform.name} using ${this.getProviderLabel()}... ⏳`);
         
         let txt = '';
-        if (this.aiProv === 'claude') txt = await TST_AIService.callClaude(p, this.keys.anthropic);
-        else if (this.aiProv === 'openai') txt = await TST_AIService.callOpenAI(p, this.keys.openai);
-        else if (this.aiProv === 'gemini') txt = await TST_AIService.callGemini(p, this.keys.google);
-        else if (this.aiProv === 'ollama') txt = await TST_AIService.callOllama(p, this.ollamaUrl, this.ollamaModel);
+        if (this.aiProv === 'claude') txt = await TST_AIService.callClaude(p, this.keys.anthropic, this.photos);
+        else if (this.aiProv === 'openai') txt = await TST_AIService.callOpenAI(p, this.keys.openai, this.photos);
+        else if (this.aiProv === 'gemini') txt = await TST_AIService.callGemini(p, this.keys.google, this.photos);
+        else if (this.aiProv === 'ollama') txt = await TST_AIService.callOllama(p, this.ollamaUrl, this.ollamaModel, this.photos);
 
         this.generatedPost = txt.trim();
 
         // Pass 2: Final Polish if over limit
         if (this.charCount > this.selectedPlatform.lim) {
+          clearInterval(msgInterval);
+          this.loadingMessage = "Polishing text to fit platform limits... 🛠️";
           this.logAction(`Post over limit (${this.charCount}/${this.selectedPlatform.lim}). Polishing... 🛠️`);
           this.generatedPost = await TST_ContentEngine.polish(this.generatedPost, this.selectedPlatform.lim, this);
         }
 
         // Final Safety Nets
-        this.generatedPost = tstStripMarkdown(this.generatedPost);
+        this.generatedPost = TST_Utils.stripMarkdown(this.generatedPost);
         if (!this.includeUrl) {
-          this.generatedPost = tstStripLinks(this.generatedPost);
+          this.generatedPost = TST_Utils.stripLinks(this.generatedPost);
         }
 
         // Auto-save to history

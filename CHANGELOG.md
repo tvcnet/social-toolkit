@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.7.7] — 2026-03-19
+### Added
+- **Multimodal (Vision) AI Support**: All four AI providers (Claude, OpenAI, Gemini, Ollama) now officially support sending uploaded images alongside the text prompt, enabling visual context in post generation.
+- **IMAGE CONTEXT Prompt Injection**: When photos are uploaded, the prompt engine automatically injects explicit visual analysis instructions to the AI, producing more visually relevant posts.
+- **Polishing UX Transparency**: When a generated post exceeds a platform's character limit and requires a second API pass, the loading message now explicitly shows "Polishing text to fit platform limits... 🛠️" instead of random loading phrases.
+
+### Changed
+- **Namespaced Global Utilities**: Consolidated loose global functions (`tstStripLinks`, `tstStripMarkdown`, `tstSanitize`) into a modular `TST_Utils` namespace object for cleaner code organization.
+- **Declarative Event Listeners**: Replaced imperative `document.addEventListener` keyboard shortcut bindings with idiomatic Alpine.js `@keydown` directives on the `<body>` element, improving maintainability and fixing an invalid `.cmd` modifier (now `.meta`).
+- **Escape Key Enhancement**: Escape now cascades through all modals — closing the Settings modal first, then the Help modal — instead of only dismissing the Settings modal.
+
+### Fixed
+- **Prompt Length Instruction Bug**: Fixed a critical bug where the AI was never receiving the "CONCISE", "BALANCED", or "DEEP DIVE" content length instruction due to destructuring `length` instead of `contentLength`.
+- **Word Count Edge Case**: Fixed `wordCount` calculation where deleting a post or receiving an empty/whitespace-only response would display "1 word" instead of "0 words".
+
 ## [v4.7.6] — 2026-03-18
 ### Fixed
 - **UI Bug**: Fixed a DOM nesting issue where the main layout container was missing a closing `</div>`. This releases the footer into the root block context, allowing it to natively span the identical full-width size of the header.
