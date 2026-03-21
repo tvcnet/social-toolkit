@@ -2,10 +2,26 @@
  * File: tst-services.js
  * Description: AI API service integration for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.7.8
+ * Version: 4.9.0
  */
 
 const TST_AIService = {
+  /**
+   * Unified dispatcher — routes to the correct AI provider.
+   * Adding a new provider only requires adding one case here.
+   */
+  async call(provider, prompt, keys, options = {}) {
+    const { photos = [], ollamaUrl, ollamaModel } = options;
+    const keyMap = TST_PROVIDER_KEY_MAP || {};
+    switch (provider) {
+      case 'claude':  return this.callClaude(prompt, keys[keyMap.claude], photos);
+      case 'openai':  return this.callOpenAI(prompt, keys[keyMap.openai], photos);
+      case 'gemini':  return this.callGemini(prompt, keys[keyMap.gemini], photos);
+      case 'ollama':  return this.callOllama(prompt, ollamaUrl, ollamaModel, photos);
+      default: throw new Error(`Unknown AI provider: ${provider}`);
+    }
+  },
+
   _extractBase64(dataUrl) {
     const arr = dataUrl.split(',');
     const mime = arr[0].match(/:(.*?);/)[1];

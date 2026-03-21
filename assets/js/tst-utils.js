@@ -2,7 +2,7 @@
  * File: tst-utils.js
  * Description: Utility functions and storage management for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.7.8
+ * Version: 4.9.0
  */
 
 /* --- Utilities --- */
@@ -20,7 +20,8 @@ const TST_Utils = {
     if (!text) return "";
     // More robust URL regex covering http, https, and common TLD patterns
     const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9][a-zA-Z0-9-]*\.(com|org|net|edu|gov|io|biz|info|me|co|uk|tv|sh|link)\b([^\s]*))/gi;
-    return text.replace(urlRegex, "").replace(/\s+/g, " ").trim();
+    // Replace URLs and clean up resulting horizontal spaces, carefully preserving newlines (\n)
+    return text.replace(urlRegex, "").replace(/[ \t]+/g, " ").trim();
   },
 
   stripMarkdown(text) {

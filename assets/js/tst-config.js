@@ -2,14 +2,36 @@
  * File: tst-config.js
  * Description: Configuration and static data for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.7.8
+ * Version: 4.9.0
  */
 
+/* --- Platform Registry (single source of truth) --- */
+const TST_PLATFORMS = [
+  { name: 'Reddit', key: 'reddit', lim: 10000, markdown: true },
+  { name: 'X', key: 'twitter', lim: 280, canDirect: true, markdown: false },
+  { name: 'Instagram', key: 'instagram', lim: 2200, markdown: false },
+  { name: 'Facebook', key: 'facebook', lim: 63206, markdown: false },
+  { name: 'Threads', key: 'threads', lim: 500, markdown: false },
+  { name: 'LinkedIn', key: 'linkedin', lim: 3000, canDirect: true, markdown: false },
+  { name: 'Bluesky', key: 'bluesky', lim: 300, canDirect: true, markdown: false },
+  { name: 'Mastodon', key: 'mastodon', lim: 500, canDirect: true, markdown: true }
+];
+
+/* --- Provider Metadata --- */
 const TST_PROV_LABEL = { 
   claude: 'Claude 3.5 Haiku', 
   openai: 'GPT-5 Nano', 
   gemini: 'Gemma 3 27B', 
   ollama: 'Ollama' 
+};
+
+/* Maps provider IDs to their key names in the keys object */
+const TST_PROVIDER_KEY_MAP = {
+  claude: 'anthropic',
+  openai: 'openai',
+  gemini: 'google',
+  google: 'google',
+  ollama: null
 };
 
 const TST_PLATFORM_GUIDE = {
@@ -18,8 +40,9 @@ const TST_PLATFORM_GUIDE = {
   linkedin: { style: 'LinkedIn (3,000-char limit): STRICT HARD LIMIT: 3,000 characters. Target range: 2,500–3,000 characters. Professional story, key takeaway, professional tone. 4–6 emojis.' },
   facebook: { style: 'Facebook (STRICT HARD LIMIT: 63,206 chars): Target range: 2,000–3,000 characters. Conversational story, relatable moment, clear CTA. 6–10 emojis.' },
   threads: { style: 'Threads (500-char limit): STRICT HARD LIMIT: 500 characters. Target range: 460–500 characters. Authentic and human. 3–5 emojis.' },
-  tiktok: { style: 'TikTok (2,200-char limit): STRICT HARD LIMIT: 2,200 characters. Target range: 1,800–2,200 characters. Energetic voice, Gen-Z aware, 6–10 emojis.' },
-  bluesky: { style: 'Bluesky (300-char limit): STRICT HARD LIMIT: 300 characters. Target range: 260–300 characters. Conversational, authentic, and tech-aware. 2–4 emojis.' }
+  bluesky: { style: 'Bluesky (300-char limit): STRICT HARD LIMIT: 300 characters. Target range: 260–300 characters. Conversational, authentic, and tech-aware. 2–4 emojis.' },
+  reddit: { style: 'Reddit (10,000-char limit): Community-first, conversational, and transparent. Avoid "corporate speak". Reddit users value authenticity, personal perspective, and structured value (lists/bolding). Provide a strong hook or question. 1–3 emojis max.' },
+  mastodon: { style: 'Mastodon (500-char limit): STRICT HARD LIMIT: 500 characters. Target range: 460–500 characters. Community-oriented, tech-savvy, and anti-corporate. Values decentralization and open-source ethos. 2–4 emojis.' }
 };
 
 const TST_HELP_CONTENT = {

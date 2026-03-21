@@ -2,7 +2,7 @@
  * File: social-toolkit.js
  * Description: Main Alpine.js Controller for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.7.8
+ * Version: 4.9.0
  */
 
 document.addEventListener('alpine:init', () => {
@@ -22,15 +22,7 @@ document.addEventListener('alpine:init', () => {
 
     // Core State
     aiProv: TSTStorage.getStr('tst_ai_provider', 'gemini'),
-    platforms: [
-      { name: 'X', key: 'twitter', lim: 280, canDirect: true },
-      { name: 'Instagram', key: 'instagram', lim: 2200 },
-      { name: 'Facebook', key: 'facebook', lim: 63206 },
-      { name: 'Threads', key: 'threads', lim: 500 },
-      { name: 'TikTok', key: 'tiktok', lim: 2200 },
-      { name: 'Bluesky', key: 'bluesky', lim: 300, canDirect: true },
-      { name: 'LinkedIn', key: 'linkedin', lim: 3000, canDirect: true }
-    ],
+    platforms: [...TST_PLATFORMS],
     selectedPlatform: null,
 
     // Form Inputs
@@ -49,9 +41,9 @@ document.addEventListener('alpine:init', () => {
     tempPost: '',
     scheduleDate: new Date().toISOString().split('T')[0],
     scheduleTime: new Date().toTimeString().slice(0, 5),
-    schedule: TSTStorage.getJSON('tst_sched', []),
-    activityLogs: TSTStorage.getJSON('tst_logs', []),
-    postHistory: TSTStorage.getJSON('tst_history', []),
+    schedule: TST_Schedule.load(),
+    activityLogs: TSTStorage.getJSON('tst_logs', []).filter(l => l && l.msg).map((l, i) => ({ ...l, id: l.id || Date.now() + i + Math.random() })),
+    postHistory: TST_History.load(),
     showHistory: TSTStorage.getBool('tst_show_history', false),
 
     // Help Modal System (v4.5.0)
@@ -107,6 +99,13 @@ document.addEventListener('alpine:init', () => {
     init() {
       this.migrateLegacyData();
       this.selectedPlatform = this.platforms[0];
+
+      // Sanitize stored logs: ensure every entry has a unique numeric id
+      this.activityLogs = this.activityLogs.map((log, i) => ({
+        ...log,
+        id: (typeof log.id === 'number' && log.id > 0) ? log.id : Date.now() + i + Math.random()
+      }));
+      TSTStorage.set('tst_logs', this.activityLogs);
       const savedOllama = TSTStorage.getStr('tst_ollama_model', '');
       if (savedOllama) {
         this.ollamaModels = [savedOllama];
@@ -225,8 +224,7 @@ document.addEventListener('alpine:init', () => {
     isSvcReady(svc) {
       if (!svc) return false;
       if (svc.id === 'ollama') return !!(this.ollamaUrl && this.ollamaModel);
-      const keyMap = { claude: 'anthropic', openai: 'openai', gemini: 'google', google: 'google' };
-      const keyId = svc.keyId || svc.key || keyMap[svc.id];
+      const keyId = svc.keyId || svc.key || TST_PROVIDER_KEY_MAP[svc.id];
       return !!this.keys[keyId];
     },
     svcStatusMessage(svc) {
@@ -298,7 +296,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     pickAI(id) {
-      if (id !== 'ollama' && !this.keys[id === 'gemini' ? 'google' : (id === 'claude' ? 'anthropic' : id)]) {
+      if (id !== 'ollama' && !this.keys[TST_PROVIDER_KEY_MAP[id]]) {
         this.toastMsg(`Add ${id} key first!`, true);
         this.showModal = true;
         return;
@@ -326,11 +324,11 @@ document.addEventListener('alpine:init', () => {
         const p = TST_ContentEngine.buildPrompt(this);
         this.logAction(`Generating post for ${this.selectedPlatform.name} using ${this.getProviderLabel()}... ⏳`);
         
-        let txt = '';
-        if (this.aiProv === 'claude') txt = await TST_AIService.callClaude(p, this.keys.anthropic, this.photos);
-        else if (this.aiProv === 'openai') txt = await TST_AIService.callOpenAI(p, this.keys.openai, this.photos);
-        else if (this.aiProv === 'gemini') txt = await TST_AIService.callGemini(p, this.keys.google, this.photos);
-        else if (this.aiProv === 'ollama') txt = await TST_AIService.callOllama(p, this.ollamaUrl, this.ollamaModel, this.photos);
+        const txt = await TST_AIService.call(this.aiProv, p, this.keys, {
+          photos: this.photos,
+          ollamaUrl: this.ollamaUrl,
+          ollamaModel: this.ollamaModel
+        });
 
         this.generatedPost = txt.trim();
 
@@ -342,14 +340,13 @@ document.addEventListener('alpine:init', () => {
           this.generatedPost = await TST_ContentEngine.polish(this.generatedPost, this.selectedPlatform.lim, this);
         }
 
-        // Final Safety Nets
-        this.generatedPost = TST_Utils.stripMarkdown(this.generatedPost);
-        if (!this.includeUrl) {
-          this.generatedPost = TST_Utils.stripLinks(this.generatedPost);
-        }
+        // Consolidated post-processing pipeline
+        this.generatedPost = TST_ContentEngine.postProcess(this.generatedPost, this.selectedPlatform, {
+          includeUrl: this.includeUrl
+        });
 
         // Auto-save to history
-        this.postHistory.unshift({
+        this.postHistory = TST_History.add(this.postHistory, {
           id: Date.now(),
           post: this.generatedPost,
           platform: this.selectedPlatform.name,
@@ -357,8 +354,6 @@ document.addEventListener('alpine:init', () => {
           time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
           date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
         });
-        if (this.postHistory.length > 20) this.postHistory.pop();
-        TSTStorage.set('tst_history', this.postHistory);
         this.toastMsg('Boom! Your post is ready 🎉');
         if (typeof this._burstConfetti === 'function') this._burstConfetti();
       } catch (e) {
@@ -379,7 +374,10 @@ document.addEventListener('alpine:init', () => {
 
     removeFromSched(index) {
       const id = this.schedule[index]?.id;
-      if (id) this.rmvRow(id);
+      if (id) {
+        this.schedule = TST_Schedule.remove(this.schedule, id);
+        this.logAction('Removed post from calendar 🗑️');
+      }
     },
 
     copyPost() {
@@ -416,7 +414,7 @@ document.addEventListener('alpine:init', () => {
         this.toastMsg('Generate a post first!', true);
         return;
       }
-      this.schedule.unshift({
+      this.schedule = TST_Schedule.add(this.schedule, {
         id: Date.now(),
         ai: this.getProviderLabel(),
         platform: this.selectedPlatform.name,
@@ -424,35 +422,25 @@ document.addEventListener('alpine:init', () => {
         date: this.scheduleDate,
         time: this.scheduleTime
       });
-      TSTStorage.set('tst_sched', this.schedule);
       this.logAction(`Added post to calendar for ${this.selectedPlatform.name} 🗓️`);
       this.toastMsg('Added to calendar!');
     },
 
     rmvRow(id) {
-      this.schedule = this.schedule.filter(s => s.id !== id);
-      TSTStorage.set('tst_sched', this.schedule);
+      this.schedule = TST_Schedule.remove(this.schedule, id);
       this.logAction('Removed post from calendar 🗑️');
     },
 
     clearSched() {
-      if (confirm('Clear calendar?')) {
-        this.schedule = [];
-        TSTStorage.remove('tst_sched');
+      const result = TST_Schedule.clear();
+      if (result !== null) {
+        this.schedule = result;
         this.logAction('Calendar cleared 🧹');
       }
     },
 
     exportCSV() {
-      const hdr = 'AI Provider,Platform,Post,Date,Time\n';
-      const rows = this.schedule.map(s => `"${s.ai}","${s.platform}","${s.post.replace(/"/g, '""')}","${s.date}","${s.time}"`).join('\n');
-      const blob = new Blob([hdr + rows], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = Object.assign(document.createElement('a'), { href: url, download: 'socialtoolkit-calendar.csv' });
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      TST_Schedule.exportCSV(this.schedule);
     },
 
     exportBackup() {
@@ -514,7 +502,7 @@ document.addEventListener('alpine:init', () => {
     logAction(m) {
       const now = new Date();
       const time = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      this.activityLogs.unshift({ id: Date.now(), msg: m, time });
+      this.activityLogs.unshift({ id: now.getTime() + Math.random(), msg: m, time });
       if (this.activityLogs.length > 50) this.activityLogs.pop();
       TSTStorage.set('tst_logs', this.activityLogs);
     },
@@ -538,16 +526,15 @@ document.addEventListener('alpine:init', () => {
     },
 
     clearHistory() {
-      if (confirm('Clear history?')) {
-        this.postHistory = [];
-        TSTStorage.remove('tst_history');
+      const result = TST_History.clear();
+      if (result !== null) {
+        this.postHistory = result;
         this.logAction('History cleared 🧹');
       }
     },
 
     removeFromHistory(id) {
-      this.postHistory = this.postHistory.filter(h => h.id !== id);
-      TSTStorage.set('tst_history', this.postHistory);
+      this.postHistory = TST_History.remove(this.postHistory, id);
       this.logAction('Removed entry from history 🗑️');
     },
 

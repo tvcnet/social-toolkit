@@ -5,6 +5,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.9.0] — 2026-03-21
+### Refactored — Phase 1 Architecture Cleanup
+- **Centralized Platform Registry**: Moved the `platforms` array from the controller into `tst-config.js` as `TST_PLATFORMS`. Adding or modifying a platform no longer requires editing the controller.
+- **Unified AI Dispatcher**: Created `TST_AIService.call(provider, prompt, keys, options)` to eliminate the duplicated `if/else if` chain that existed in both `social-toolkit.js` and `tst-content.js`. Adding a new AI provider now requires editing only one method.
+- **Consolidated Post-Processing**: Created `TST_ContentEngine.postProcess(text, platform, options)` to consolidate the 3-step safety net (strip markdown → strip links → normalize newlines) into a single clean call.
+- **Unified Provider Key Map**: Created `TST_PROVIDER_KEY_MAP` in config to replace the 3 different inline key-mapping patterns scattered across the controller.
+- **Removed Dead TikTok Entry**: Cleaned up the orphaned TikTok entry from `TST_PLATFORM_GUIDE`.
+- **Added Mastodon Platform Guide**: Added `mastodon` style guide entry to match the platform registry.
+
+### Refactored — Phase 2 Domain Extraction
+- **New Module `tst-history.js`**: Extracted post history management (load, add, remove, clear) into a dedicated `TST_History` module with its own storage logic.
+- **New Module `tst-schedule.js`**: Extracted content calendar management (load, add, remove, clear, CSV export) into a dedicated `TST_Schedule` module.
+- **Controller Slimmed**: The main Alpine controller now delegates to `TST_History` and `TST_Schedule` instead of owning inline CRUD and persistence logic.
+
+### Fixed
+- **Duplicate Key Warning**: Fixed Alpine `x-for` duplicate key warnings caused by `Date.now()` producing identical IDs during rapid-fire logging. Now uses `getTime() + Math.random()` for uniqueness.
+- **Corrupted Log Sanitization**: Activity logs loaded from localStorage are now filtered and re-keyed at definition time, before Alpine renders, preventing crashes from corrupted entries.
+
+## [v4.8.8] — 2026-03-21
+### Changed
+- **Platform Capability Simplification**: Standardized the platform configuration to strictly disallow Markdown on all social networks except for **Reddit** and **Mastodon**. This simplifies the prompt logic and ensures consistent plain-text output across X, Instagram, Facebook, Threads, LinkedIn, and Bluesky.
+
+## [v4.8.7] — 2026-03-21
+### Fixed
+- **Dynamic Markdown Safety Net**: Re-enabled the `stripMarkdown` safety pass for all platforms that do not explicitly support it (like Facebook and Instagram). This ensures that even if the AI ignores the prompt instructions and includes asterisks, the toolkit will automatically strip them out before displaying the final post.
+
+## [v4.8.6] — 2026-03-21
+### Changed
+- **Markdown Logic by Platform**: Integrated a dynamic capability check for Markdown. Reddit remains the only platform allowed to use Markdown (`**bold**`). All other platforms (Facebook, X, Instagram, Threads, LinkedIn, etc.) are now strictly forbidden from using asterisks or underscores and will use CAPITALIZATION for emphasis instead.
+
+## [v4.8.5] — 2026-03-21
+### Added
+- **Meta-Data Footer Prohibition**: Added a strict global rule (Rule #7) to the prompt engine to prevent the AI from generating redundant "Published on [Date]" or "Written by [Name]" footers. This ensures the output is purely social media content without unnecessary administrative text.
+
+## [v4.8.4] — 2026-03-21
+### Changed
+- **Global Readability Standards**: All posts over 400 characters now follow a "Readability First" standard across all platforms (Facebook, LinkedIn, etc.). This ensures that long-form content always includes double-line breaks between paragraphs and list items, preventing the "wall of text" issue.
+- **Formatting Preservation**: Removed strict markdown stripping during the final processing pass. This allows natural structural formatting (like bolding and lists) to survive and render correctly on any platform that supports it.
+
+## [v4.8.3] — 2026-03-21
+### Fixed
+- **Literal Newline Fix**: Fixed a bug where literal `\n` character sequences would sometimes appear at the end of generated posts or during polishing. Added a final normalization step to ensure all escaped newlines are converted to actual structural line breaks.
+
+## [v4.8.2] — 2026-03-21
+### Fixed
+- **Readability & Formatting Collapse**: Updated the global AI prompts in `buildPrompt()` and `polish()` to strictly force double-line breaks (`\n\n`) between paragraphs and list items.
+- **Whitespace Wiping Bug**: Fixed a critical bug in `TST_Utils.stripLinks()` where all newlines were being flattened into a single space (via a `\s+` regex) whenever the "Include URL" toggle was off. Structural newlines are now safely preserved.
+- **Reddit Markdown Enabled**: Explicitly white-listed Markdown formatting (like `**bold**` and `*italics*`) specifically for Reddit posts, since Reddit natively supports and encourages it for structured value. Bypassed `stripMarkdown()` for Reddit to ensure the formatting survives generation.
+
+## [v4.8.0] — 2026-03-21
+### Changed
+- **Reddit Direct Posting Removed**: Removed the `canDirect` flag for Reddit. We discovered that modern Reddit ("shreddit") intentionally disables URL parameter pre-filling for the post body to prevent spam bots (ignoring both `text` and `selftext` parameters). Because of this API limitation on their end, we have moved Reddit to a "Copy & Paste" workflow like Instagram and Facebook. The UI will no longer display the green "post directly" identifier next to Reddit.
+
+## [v4.7.9] — 2026-03-21
+### Added
+- **Reddit Platform Integration**: Added Reddit to the platforms list with a specialized 10,000-character writing guide and "Post Directly" support. The AI now produces conversational, community-first content tailored for Reddit's unique culture, favoring value and transparency over marketing speak.
+
 ## [v4.7.8] — 2026-03-20
 ### Fixed
 - **Critical Prompt Construction Bug**: Fixed a destructuring mismatch in `buildPrompt()` where `platform` was always `undefined` (the Alpine component uses `selectedPlatform`). This caused the entire structured prompt — 5 W's, platform guide, tone, length, image context, and character limit rules — to be skipped, sending only a generic fallback string to the AI. Most visibly, when photos were attached, the AI would generate posts based solely on the image with no text context.

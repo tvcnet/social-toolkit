@@ -2,7 +2,7 @@
  * File: tst-content.js
  * Description: Content generation and polishing engine for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.7.8
+ * Version: 4.9.0
  */
 
 const TST_ContentEngine = {
@@ -36,8 +36,11 @@ CRITICAL RULES (FOLLOW IN ORDER):
 2. NO SHORTENERS: Never use bit.ly, tinyurl, or any other shortener. Use original text or original full URL.
 3. CHARACTER LIMIT: YOUR POST MUST BE UNDER THE LIMIT. If a URL is included, shorten your TEXT significantly to compensate.
 4. Output ONLY the final post text. No labels, no headers.
-5. PLAIN TEXT ONLY: No markdown formatting. Do NOT use asterisks for bold (**text**) or underscores for italics (_text_). Use ONLY standard alphanumeric characters, punctuation, and emojis.
+5. READABILITY & FORMATTING:
+   - SPACING: For all posts over 400 characters, you MUST use double-line breaks (\\n\\n) between all paragraphs and list items to prevent "walls of text."
+   - MARKDOWN: ${platform.markdown ? 'This platform (Reddit) SUPPORTS Markdown. Use **bold** and *italics* for emphasis and structure.' : 'This platform (Facebook, Instagram, X, Threads, etc.) DOES NOT supported Markdown. STRICT PROHIBITION against using asterisks (**) or underscores (_) for formatting. Instead, use CAPITALIZATION for emphasis and bullet points (•) for lists.'}
 6. NO HALLUCINATIONS: Do not invent links or details not present in the details above.
+7. NO META-DATA / FOOTERS: STRICT PROHIBITION against including dates, times, or 'Published by' strings at the end of the post (e.g., "Published March 21, 2026"). Output only the story content itself.
 `.trim();
   },
 
@@ -48,18 +51,31 @@ CRITICAL RULES (FOLLOW IN ORDER):
 It is currently ${text.length} characters.
 CRITICAL: You MUST be at least 5-10 characters UNDER the limit of ${limit} to ensure 100% compliance.
 ${includeUrl ? 'You MUST preserve the full URL.' : 'CRITICAL: Do NOT include any URLs or link placeholders.'}
-Remove fluff, adjectives, greeting phrases, and extra emojis.
-    DO NOT add any intro text or meta-labels. JUST OUTPUT THE REVISED POST (PLAIN TEXT ONLY - NO MARKDOWN).
+Remove fluff, adjectives, greeting phrases, and extra emojis. CRITICAL: Preserve double-line breaks between paragraphs for readability—do not collapse into a single block.
+    DO NOT add any intro text or meta-labels. JUST OUTPUT THE REVISED POST.
 
 POST TO TRIM:
 ${text}`;
     
-    let txt = '';
-    if (aiProv === 'claude') txt = await TST_AIService.callClaude(p, keys.anthropic);
-    else if (aiProv === 'openai') txt = await TST_AIService.callOpenAI(p, keys.openai);
-    else if (aiProv === 'gemini') txt = await TST_AIService.callGemini(p, keys.google);
-    else if (aiProv === 'ollama') txt = await TST_AIService.callOllama(p, ollamaUrl, ollamaModel);
-    
+    const txt = await TST_AIService.call(aiProv, p, keys, { ollamaUrl, ollamaModel });
     return txt.trim();
+  },
+
+  /**
+   * Consolidated post-processing pipeline.
+   * Strips markdown on non-markdown platforms, removes links if disabled,
+   * and normalizes any literal \n sequences.
+   */
+  postProcess(text, platform, options = {}) {
+    let result = text;
+    if (platform && !platform.markdown) {
+      result = TST_Utils.stripMarkdown(result);
+    }
+    if (!options.includeUrl) {
+      result = TST_Utils.stripLinks(result);
+    }
+    // Normalize any literal \n sequences into actual newlines
+    result = result.replace(/\\n/g, '\n');
+    return result;
   }
 };
