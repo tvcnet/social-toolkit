@@ -2,12 +2,12 @@
  * File: tst-content.js
  * Description: Content generation and polishing engine for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.7.7
+ * Version: 4.7.8
  */
 
 const TST_ContentEngine = {
   buildPrompt(data) {
-    const { platform, who, what, where, why, whenDate, whenTime, hashtags, tone, contentLength, customInstructions, includeUrl, photos } = data;
+    const { selectedPlatform: platform, who, what, where, why, whenDate, whenTime, hashtags, tone, contentLength, customInstructions, includeUrl, photos } = data;
     
     if (!platform) return 'Write a general post based on these details:';
     

@@ -2,7 +2,7 @@
  * File: tst-services.js
  * Description: AI API service integration for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.7.7
+ * Version: 4.7.8
  */
 
 const TST_AIService = {

@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.7.8] — 2026-03-20
+### Fixed
+- **Critical Prompt Construction Bug**: Fixed a destructuring mismatch in `buildPrompt()` where `platform` was always `undefined` (the Alpine component uses `selectedPlatform`). This caused the entire structured prompt — 5 W's, platform guide, tone, length, image context, and character limit rules — to be skipped, sending only a generic fallback string to the AI. Most visibly, when photos were attached, the AI would generate posts based solely on the image with no text context.
+
 ## [v4.7.7] — 2026-03-19
 ### Added
 - **Multimodal (Vision) AI Support**: All four AI providers (Claude, OpenAI, Gemini, Ollama) now officially support sending uploaded images alongside the text prompt, enabling visual context in post generation.

@@ -2,7 +2,7 @@
  * File: tst-config.js
  * Description: Configuration and static data for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.7.7
+ * Version: 4.7.8
  */
 
 const TST_PROV_LABEL = { 

@@ -2,7 +2,7 @@
  * File: social-toolkit.js
  * Description: Main Alpine.js Controller for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.7.7
+ * Version: 4.7.8
  */
 
 document.addEventListener('alpine:init', () => {
