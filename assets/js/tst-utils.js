@@ -2,7 +2,7 @@
  * File: tst-utils.js
  * Description: Utility functions and storage management for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.9.0
+ * Version: 4.10.0
  */
 
 /* --- Utilities --- */

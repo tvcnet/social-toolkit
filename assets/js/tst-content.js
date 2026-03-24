@@ -2,7 +2,7 @@
  * File: tst-content.js
  * Description: Content generation and polishing engine for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.9.0
+ * Version: 4.10.0
  */
 
 const TST_ContentEngine = {
@@ -37,7 +37,7 @@ CRITICAL RULES (FOLLOW IN ORDER):
 3. CHARACTER LIMIT: YOUR POST MUST BE UNDER THE LIMIT. If a URL is included, shorten your TEXT significantly to compensate.
 4. Output ONLY the final post text. No labels, no headers.
 5. READABILITY & FORMATTING:
-   - SPACING: For all posts over 400 characters, you MUST use double-line breaks (\\n\\n) between all paragraphs and list items to prevent "walls of text."
+   - SPACING: For all posts over 400 characters, you MUST use double-line breaks (\\n\\n) between all paragraphs and list items to prevent "walls of text." DO NOT use HTML tags like <br>.
    - MARKDOWN: ${platform.markdown ? 'This platform (Reddit) SUPPORTS Markdown. Use **bold** and *italics* for emphasis and structure.' : 'This platform (Facebook, Instagram, X, Threads, etc.) DOES NOT supported Markdown. STRICT PROHIBITION against using asterisks (**) or underscores (_) for formatting. Instead, use CAPITALIZATION for emphasis and bullet points (•) for lists.'}
 6. NO HALLUCINATIONS: Do not invent links or details not present in the details above.
 7. NO META-DATA / FOOTERS: STRICT PROHIBITION against including dates, times, or 'Published by' strings at the end of the post (e.g., "Published March 21, 2026"). Output only the story content itself.
@@ -46,12 +46,13 @@ CRITICAL RULES (FOLLOW IN ORDER):
 
   async polish(text, limit, context) {
     const { aiProv, keys, ollamaUrl, ollamaModel, includeUrl } = context;
+    const targetLimit = Math.max(10, limit - 25); // Ask AI to aim lower to account for hallucinated counting
     
-    const p = `STRICT TASK: Truncate the following social media post to be UNDER ${limit} characters.
+    const p = `STRICT TASK: You are a strict character-limit enforcer. Truncate the following social media post to be ABSOLUTELY UNDER ${targetLimit} characters.
 It is currently ${text.length} characters.
-CRITICAL: You MUST be at least 5-10 characters UNDER the limit of ${limit} to ensure 100% compliance.
-${includeUrl ? 'You MUST preserve the full URL.' : 'CRITICAL: Do NOT include any URLs or link placeholders.'}
-Remove fluff, adjectives, greeting phrases, and extra emojis. CRITICAL: Preserve double-line breaks between paragraphs for readability—do not collapse into a single block.
+CRITICAL: You MUST aggressively shorten the text. If you fail to make it under ${targetLimit} characters, the system will break.
+${includeUrl ? 'You MUST preserve the full URL, which takes up character space. Shorten the TEXT heavily to compensate.' : 'CRITICAL: Do NOT include any URLs or link placeholders.'}
+Remove fluff, adjectives, greeting phrases, and extra emojis. CRITICAL: Preserve double-line breaks between paragraphs for readability—do not collapse into a single block. DO NOT use HTML tags like <br>.
     DO NOT add any intro text or meta-labels. JUST OUTPUT THE REVISED POST.
 
 POST TO TRIM:
@@ -74,8 +75,15 @@ ${text}`;
     if (!options.includeUrl) {
       result = TST_Utils.stripLinks(result);
     }
+    // Normalize HTML breaks
+    result = result.replace(/<br\s*\/?>/gi, '\n');
+    
     // Normalize any literal \n sequences into actual newlines
     result = result.replace(/\\n/g, '\n');
-    return result;
+
+    // Collapse excessive line breaks (max 2 consecutive allowed)
+    result = result.replace(/\n{3,}/g, '\n\n');
+    
+    return result.trim();
   }
 };

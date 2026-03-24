@@ -2,7 +2,7 @@
  * File: social-toolkit.css
  * Description: Core styling and bespoke glassmorphism utilities for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.7.6
+ * Version: 4.10.0
  */
 
 [x-cloak] { display: none !important; }
@@ -222,7 +222,7 @@
 }
 .tst-help-modal { width: 100%; max-width: 420px; background: white; border-radius: 1.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; position: relative; }
 .tst-help-header { padding: 1.5rem 1.5rem 1rem; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(12, 74, 110, 0.05); }
-.tst-help-body { padding: 1.5rem; color: #0c4a6e; font-size: 0.95rem; line-height: 1.6; }
+.tst-help-body { padding: 1.5rem; color: #0c4a6e; font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; }
 .tst-help-footer { padding: 1rem 1.5rem 1.5rem; text-align: right; }
 .tst-help-btn { background: #0ea5e9; color: white; padding: 0.6rem 1.5rem; border-radius: 9999px; font-weight: 600; font-size: 0.875rem; transition: all 0.2s; }
 .tst-help-btn:hover { background: #0284c7; transform: translateY(-1px); }

@@ -2,7 +2,7 @@
  * File: social-toolkit.js
  * Description: Main Alpine.js Controller for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.9.0
+ * Version: 4.10.0
  */
 
 document.addEventListener('alpine:init', () => {
@@ -64,6 +64,7 @@ document.addEventListener('alpine:init', () => {
         tone: 'Narrative Personality',
         length: 'Content Depth & Strategy',
         generate: 'AI Content Generation',
+        preview: 'Live Post Preview',
         photos: 'Visual Storytelling',
         schedule: 'Smart Content Scheduling',
         calendar: 'Editorial Calendar & Export',
@@ -370,6 +371,43 @@ document.addEventListener('alpine:init', () => {
       if (this.isGenerating) return;
       this.logAction('Regenerating post with same inputs ↻');
       this.generate();
+    },
+
+    async rerollPost() {
+      if (!this.generatedPost || this.isGenerating || !this.selectedPlatform) return;
+      this.isGenerating = true;
+      const msgInterval = setInterval(() => {
+        this.loadingMessage = "Rerolling to fit platform limit... 🎲";
+      }, 2000);
+
+      try {
+        this.loadingMessage = "Rerolling to fit platform limit... 🎲";
+        this.logAction(`Rerolling existing post for ${this.selectedPlatform.name}... 🎲`);
+        
+        let newPost = await TST_ContentEngine.polish(this.generatedPost, this.selectedPlatform.lim, this);
+        this.generatedPost = TST_ContentEngine.postProcess(newPost, this.selectedPlatform, {
+          includeUrl: this.includeUrl
+        });
+
+        // Auto-save to history
+        this.postHistory = TST_History.add(this.postHistory, {
+          id: Date.now(),
+          post: this.generatedPost,
+          platform: this.selectedPlatform.name,
+          ai: this.getProviderLabel() + " (Reroll)",
+          time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        });
+        
+        this.toastMsg('Rerolled! 🎲');
+        if (typeof this._burstConfetti === 'function') this._burstConfetti();
+      } catch (e) {
+        this.logAction(`Reroll Error: ${e.message} 🛑`);
+        this.toastMsg(e.message || 'API error during reroll!', true);
+      } finally {
+        clearInterval(msgInterval);
+        this.isGenerating = false;
+      }
     },
 
     removeFromSched(index) {

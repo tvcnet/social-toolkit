@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.10.0] — 2026-03-24
+### Added
+- **Post Reroll**: Added a "Reroll 🎲" button to the Post Preview section. This allows users to re-run the polishing engine on their *current* generated post to force it to fit a newly selected platform's character limit without generating a completely new idea from scratch.
+
+### Changed
+- **UI Layout**: Moved the "Schedule" button from the inline actions row to be a full-width block below the "Post Directly" button for better visual hierarchy. Swapped the placement of the "Edit" and "Reroll" inline buttons.
+
+### Fixed
+- **HTML Breeds & Spacing**: Fixed a bug where some AI models would incorrectly hallucinate `<br>` tags during content polishing or generation instead of structural newlines. Prompt logic now strictly bans HTML tags. A final post-processing regex actively strips `<br>` tags into literal `\n` line breaks, and further collapses excessive spacing (any block of 3+ newlines is squashed to a standard double-line break).
+- **Reroll Truncation Bounds**: Hardened the prompt system specifically for the Reroll functionality. To protect against AI models that struggle with accurate character counting (like Gemma 3 failing to hit the Bluesky 300 allowance), the `TST_ContentEngine.polish` handler now dynamically commands the AI to aim 25 characters *under* the true limit and uses much stricter consequence-based phrasing.
+
+## [v4.9.1] — 2026-03-24
+### Added
+- **Post Preview Help Strategy**: Added a dedicated educational tooltip to the "Post Preview" header, providing strategic guidance on live editing and content regeneration.
+
 ## [v4.9.0] — 2026-03-21
 ### Refactored — Phase 1 Architecture Cleanup
 - **Centralized Platform Registry**: Moved the `platforms` array from the controller into `tst-config.js` as `TST_PLATFORMS`. Adding or modifying a platform no longer requires editing the controller.

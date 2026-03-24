@@ -1,7 +1,7 @@
 <!--
  * File: tvcnet-social-toolkit.html
  * Description: Main entry point for the TVCNet Social Toolkit.
- * Version: 4.9.0
+ * Version: 4.10.0
 -->
 <!DOCTYPE html>
 <html lang="en">
@@ -10,7 +10,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="TVCNet SocialToolkit — AI-Powered Social Media Toolkit for nonprofits and small businesses.">
-  <title>TVCNet SocialToolkit v4.9.0 — AI-Powered Social Media Toolkit</title>
+  <title>TVCNet SocialToolkit v4.10.0 — AI-Powered Social Media Toolkit</title>
   <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/img/apple-touch-icon.png">
@@ -54,7 +54,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="assets/css/social-toolkit.css?v=4.9.0">
+  <link rel="stylesheet" href="assets/css/social-toolkit.css?v=4.10.0">
 </head>
 
 <body class="font-sans text-ocean min-h-screen tst-sky-bg" x-data="socialToolkit" x-cloak
@@ -67,7 +67,7 @@
     class="tst-glass-strong sticky top-0 z-50 px-4 md:px-12 flex items-center justify-between h-16 rounded-b-[2rem] mx-2 mt-0 border-b-0">
     <div class="flex items-center truncate">
       <img src="assets/img/apple-touch-icon.png" alt="Logo" class="h-8 w-8 mr-1.5 md:mr-2 rounded-md shadow-sm">
-      <div class="text-xl md:text-2xl font-bold tracking-tight text-ocean truncate mr-2">SocialToolkit <span class="text-[10px] md:text-xs text-sky-900/30 uppercase tracking-widest font-mono ml-1 align-middle">v4.9.0</span></div>
+      <div class="text-xl md:text-2xl font-bold tracking-tight text-ocean truncate mr-2">SocialToolkit <span class="text-[10px] md:text-xs text-sky-900/30 uppercase tracking-widest font-mono ml-1 align-middle">v4.10.0</span></div>
     </div>
     <div class="flex items-center gap-3">
       <button @click="openModal"
@@ -448,7 +448,9 @@
 
       <div
         class="font-mono text-xs tracking-[3px] uppercase text-sky-800 mb-5 flex items-center gap-2.5 after:content-[''] after:flex-1 after:h-px after:bg-sky-400/40 font-medium">
-        👁️ Post Preview</div>
+        👁️ Post Preview
+        <span class="tst-tooltip-trigger" @click.stop="showHelp('preview')">?</span>
+      </div>
 
       <div x-show="isGenerating"
         class="flex items-center gap-2.5 px-5 py-3.5 tst-glass rounded-xl mb-4 transition-all border border-sky-300/30"
@@ -507,16 +509,22 @@
           <button @click="startEdit"
             class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-pill font-mono text-sm tracking-wider uppercase font-semibold tst-glass text-ocean hover:bg-white/65 transition-all hover:scale-105 active:scale-[0.95] whitespace-nowrap">✎
             Edit</button>
-          <button @click="addToSched"
-            class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-pill font-mono text-sm tracking-wider uppercase font-semibold tst-glass text-ocean hover:bg-white/65 transition-all hover:scale-105 active:scale-[0.95] whitespace-nowrap">+
-            Schedule</button>
+          <button @click="rerollPost" :disabled="!generatedPost || isGenerating || isEditing"
+            class="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-pill font-mono text-sm tracking-wider uppercase font-semibold tst-glass text-ocean hover:bg-white/65 transition-all hover:scale-105 active:scale-[0.95] disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap">🎲
+            Reroll</button>
         </div>
-        <div class="relative w-full mt-2">
-          <button @click="postDirectly" x-show="selectedPlatform && selectedPlatform.canDirect"
+        <div class="relative w-full mt-2" x-show="selectedPlatform && selectedPlatform.canDirect">
+          <button @click="postDirectly"
             class="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-pill font-mono text-sm tracking-wider uppercase font-semibold bg-green-500 text-white hover:bg-green-600 transition-all shadow-md">
             🚀 Post directly
           </button>
-          <span class="tst-tooltip-trigger absolute -top-1.5 -right-1.5 z-[60]" x-show="selectedPlatform && selectedPlatform.canDirect" @click.stop="showHelp('postDirect')">?</span>
+          <span class="tst-tooltip-trigger absolute -top-1.5 -right-1.5 z-[60]" @click.stop="showHelp('postDirect')">?</span>
+        </div>
+        <div class="relative w-full mt-2">
+          <button @click="addToSched"
+            class="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-pill font-mono text-sm tracking-wider uppercase font-semibold tst-glass text-ocean hover:bg-white/65 transition-all shadow-sm">
+            + Schedule
+          </button>
         </div>
       </div>
 
@@ -687,7 +695,7 @@
     <footer class="tst-glass-strong sticky bottom-0 z-50 rounded-t-[2rem] mx-2 mb-0 px-4 md:px-12 h-16 flex items-center justify-between border-t-0">
       <div class="flex items-center truncate">
         <img src="assets/img/apple-touch-icon.png" alt="Logo" class="h-8 w-8 mr-1.5 md:mr-2 rounded-md shadow-sm opacity-90">
-        <div class="text-xl md:text-2xl font-bold tracking-tight text-ocean truncate">SocialToolkit <a href="https://www.reddit.com/r/tvcnet/comments/1rummzc/comment/ob7s80v/" target="_blank" rel="noopener" class="hover:text-ocean transition-colors opacity-60 base-opacity-60 hover:opacity-100"><span class="text-[10px] md:text-xs text-sky-900/30 uppercase tracking-widest font-mono ml-1 align-middle">v4.9.0</span></a></div>
+        <div class="text-xl md:text-2xl font-bold tracking-tight text-ocean truncate">SocialToolkit <a href="https://www.reddit.com/r/tvcnet/comments/1rummzc/comment/ob7s80v/" target="_blank" rel="noopener" class="hover:text-ocean transition-colors opacity-60 base-opacity-60 hover:opacity-100"><span class="text-[10px] md:text-xs text-sky-900/30 uppercase tracking-widest font-mono ml-1 align-middle">v4.10.0</span></a></div>
       </div>
       <div class="flex items-center gap-3">
         <p class="text-[10px] md:text-[11px] font-mono tracking-widest uppercase text-ocean/50 font-medium whitespace-nowrap">
@@ -697,12 +705,12 @@
     </footer>
 
     <!-- Core Modules -->
-    <script src="assets/js/tst-config.js?v=4.9.0"></script>
-    <script src="assets/js/tst-utils.js?v=4.9.0"></script>
-    <script src="assets/js/tst-services.js?v=4.9.0"></script>
-    <script src="assets/js/tst-content.js?v=4.9.0"></script>
-    <script src="assets/js/tst-history.js?v=4.9.0"></script>
-    <script src="assets/js/tst-schedule.js?v=4.9.0"></script>
+    <script src="assets/js/tst-config.js?v=4.10.0"></script>
+    <script src="assets/js/tst-utils.js?v=4.10.0"></script>
+    <script src="assets/js/tst-services.js?v=4.10.0"></script>
+    <script src="assets/js/tst-content.js?v=4.10.0"></script>
+    <script src="assets/js/tst-history.js?v=4.10.0"></script>
+    <script src="assets/js/tst-schedule.js?v=4.10.0"></script>
     
     <!-- Alpine Controller -->
     <script>document.write('<script src="assets/js/social-toolkit.js?v=' + Date.now() + '"><\/script>');</script>

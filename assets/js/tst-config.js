@@ -2,7 +2,7 @@
  * File: tst-config.js
  * Description: Configuration and static data for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.9.0
+ * Version: 4.10.0
  */
 
 /* --- Platform Registry (single source of truth) --- */
@@ -57,6 +57,7 @@ const TST_HELP_CONTENT = {
   tone: "Choose the personality of your post. From 'Professional' for reports to 'Humorous' for a Friday afternoon laugh!",
   length: "Tailor the depth of your content. Choose 'Short' for punchy updates or 'Long' for detailed storytelling and threads.",
   generate: "Ready to roll? This creates your unique post using all the context we've gathered above. Magic happens here!",
+  preview: "This is a live preview of your content tailored for your selected platform. You can edit the text directly if you need to make a quick tweak, or use 'Regenerate' to try a completely different approach! \n\nTip: Try clicking \"EDIT\" to create a draft post, then click \"SAVE\". Then click \"REROLL\". 🍰",
   photos: "Visualize your story! AI can describe your images to help craft a more engaging post, or even suggest captions that match the image content.",
   schedule: "Plan ahead! Set a date and time to remember when each post should go live. This helps you maintain a consistent presence without the daily stress.",
   calendar: "Your content strategy at a glance. Export your schedule as a CSV to manage it in spreadsheets, or use 'Clear' to reset the view. Clearing only removes items from this local view—it does NOT delete posts already published to social platforms.",
