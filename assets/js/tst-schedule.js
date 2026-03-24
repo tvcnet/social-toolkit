@@ -2,7 +2,7 @@
  * File: tst-schedule.js
  * Description: Content calendar / schedule management for the TVCNet Social Toolkit.
  * Author: TVCNet
- * Version: 4.10.0
+ * Version: 4.11.0
  */
 
 const TST_Schedule = {

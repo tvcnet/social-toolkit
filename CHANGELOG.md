@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v4.11.0] — 2026-03-24
+### Fixed
+- **Backup & Restore Data Sync**: Fixed an issue where restoring from backup did not save local arrays (history, logs, schedule) to persistent storage, and implemented array sanitization to prevent UI crashes. Also corrected a browser-specific DOM block that prevented backup JSON exports from downloading in Firefox.
+- **Strict Character Limits**: Implemented an enforced backstop that attempts a final dynamic truncation if a generated post remains over the platform's character limit after URLs and hashtags are appended, logging an error instead of silently failing.
+- **Log Management Wipe**: Fixed a logical bug in `clearLogs()` where wiping the activity log would inadvertently re-populate it with a "cleared" entry rather than leaving it empty.
+
+### Changed
+- **Mastodon Capabilities**: Removed the `canDirect` posting feature for Mastodon. Dynamic URL construction across a federated decentralized instance base is unreliable without custom logic holding the user's specific instance URL.
+
 ## [v4.10.0] — 2026-03-24
 ### Added
 - **Post Reroll**: Added a "Reroll 🎲" button to the Post Preview section. This allows users to re-run the polishing engine on their *current* generated post to force it to fit a newly selected platform's character limit without generating a completely new idea from scratch.
