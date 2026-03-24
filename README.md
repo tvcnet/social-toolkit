@@ -6,7 +6,7 @@
   <a href="https://www.reddit.com/r/tvcnet/comments/1rummzc/tvcnet_socialtoolkit_made_for_tvcnet_website/"><img src="https://img.shields.io/badge/Reddit-Community_Discussion-FF4500?style=for-the-badge&logo=reddit" alt="Reddit Community"></a>
 </p>
 
-# TVCNet SocialToolkit v4.7.7 — AI-Powered Social Media Toolkit
+# TVCNet SocialToolkit v4.11.0 — AI-Powered Social Media Toolkit
 
 ### AI-Powered Social Media Toolkit for Nonprofits & Small Businesses
 
