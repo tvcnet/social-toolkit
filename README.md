@@ -69,6 +69,7 @@ I'll be honest—SocialToolkit isn't for everyone. It's built for a specific kin
 
 | Feature | Details |
 |---|---|
+| Post Reroll | **[NEW!]** Re-polish existing draft posts to fit new platform limits without starting over |
 | Multi-AI Support | Claude 3.5 Haiku, GPT-5 Nano, Gemma 3 27B, and local Ollama models |
 | Multimodal Vision | **[NEW!]** Upload photos for AI-powered visual context — all 4 providers support image analysis |
 | 7 Platforms | X, Instagram, Facebook, Threads, TikTok, Bluesky, LinkedIn |
