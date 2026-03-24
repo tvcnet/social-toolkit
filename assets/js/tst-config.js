@@ -14,7 +14,7 @@ const TST_PLATFORMS = [
   { name: 'Threads', key: 'threads', lim: 500, markdown: false },
   { name: 'LinkedIn', key: 'linkedin', lim: 3000, canDirect: true, markdown: false },
   { name: 'Bluesky', key: 'bluesky', lim: 300, canDirect: true, markdown: false },
-  { name: 'Mastodon', key: 'mastodon', lim: 500, canDirect: true, markdown: true }
+  { name: 'Mastodon', key: 'mastodon', lim: 500, markdown: true }
 ];
 
 /* --- Provider Metadata --- */

@@ -274,6 +274,13 @@ document.addEventListener('alpine:init', () => {
       this.logAction('Settings saved to local storage 💾');
     },
 
+    persistAppData() {
+      TSTStorage.set('tst_sched', this.schedule);
+      TSTStorage.set('tst_history', this.postHistory);
+      TSTStorage.set('tst_logs', this.activityLogs);
+      TSTStorage.set('tst_show_history', this.showHistory);
+    },
+
     async fetchOllamaModels() {
       this.isFetchingModels = true;
       try {
@@ -345,6 +352,19 @@ document.addEventListener('alpine:init', () => {
         this.generatedPost = TST_ContentEngine.postProcess(this.generatedPost, this.selectedPlatform, {
           includeUrl: this.includeUrl
         });
+
+        if (this.generatedPost.length > this.selectedPlatform.lim) {
+          this.loadingMessage = "Applying final trim to fit platform limits... 🛠️";
+          this.logAction(`Final post still over limit (${this.generatedPost.length}/${this.selectedPlatform.lim}). Retrying trim... 🛠️`);
+          const trimmed = await TST_ContentEngine.polish(this.generatedPost, this.selectedPlatform.lim, this);
+          this.generatedPost = TST_ContentEngine.postProcess(trimmed, this.selectedPlatform, {
+            includeUrl: this.includeUrl
+          });
+        }
+
+        if (this.generatedPost.length > this.selectedPlatform.lim) {
+          throw new Error(`Could not fit post under ${this.selectedPlatform.lim} characters`);
+        }
 
         // Auto-save to history
         this.postHistory = TST_History.add(this.postHistory, {
@@ -497,6 +517,7 @@ document.addEventListener('alpine:init', () => {
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = Object.assign(document.createElement('a'), { href: url, download: `socialtoolkit-backup-${new Date().toISOString().split('T')[0]}.json` });
+      document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 100);
@@ -516,7 +537,12 @@ document.addEventListener('alpine:init', () => {
             if (data.selectedPlatformKey) {
               this.selectedPlatform = this.platforms.find(pl => pl.key === data.selectedPlatformKey) || this.selectedPlatform;
             }
+            this.activityLogs = Array.isArray(this.activityLogs) ? this.activityLogs.filter(l => l && l.msg) : [];
+            this.postHistory = Array.isArray(this.postHistory) ? this.postHistory.filter(h => h && h.post) : [];
+            this.schedule = Array.isArray(this.schedule) ? this.schedule : [];
+            this.showHistory = !!this.showHistory;
             this.saveKeys();
+            this.persistAppData();
             this.logAction('Full data backup imported 📥');
             this.toastMsg('Backup restored!');
           }
@@ -546,8 +572,9 @@ document.addEventListener('alpine:init', () => {
     },
 
     clearLogs() {
-      this.activityLogs = []; TSTStorage.remove('tst_logs');
-      this.logAction('Activity logs cleared 🧹');
+      this.activityLogs = [];
+      TSTStorage.remove('tst_logs');
+      this.toastMsg('Activity logs cleared');
     },
 
     exportLog() {
